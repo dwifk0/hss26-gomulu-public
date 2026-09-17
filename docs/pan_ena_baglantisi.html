@@ -1,0 +1,264 @@
+<title>HSS · Pan ENA Bağlantısı</title>
+<style>
+  :root{
+    --kagit:#F4F6F7; --yuzey:#FFFFFF;
+    --murekkep:#0F171C; --murekkep2:#485761; --murekkep3:#7B8A94;
+    --cizgi:#D6DCE0; --cizgi2:#E8ECEF;
+    --mavi:#1E6FA8;        /* TB6600 anodize mavisi */
+    --kehribar:#C07A1E;    /* eklenecek hat */
+    --kirmizi:#B23A2C;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --kagit:#0B1013; --yuzey:#141A1F;
+      --murekkep:#E7ECEF; --murekkep2:#9CAAB4; --murekkep3:#6C7A85;
+      --cizgi:#242D34; --cizgi2:#1B232A;
+      --mavi:#54A6DE; --kehribar:#E0A44C; --kirmizi:#E0705F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --kagit:#0B1013; --yuzey:#141A1F;
+    --murekkep:#E7ECEF; --murekkep2:#9CAAB4; --murekkep3:#6C7A85;
+    --cizgi:#242D34; --cizgi2:#1B232A;
+    --mavi:#54A6DE; --kehribar:#E0A44C; --kirmizi:#E0705F;
+  }
+  :root[data-theme="light"]{
+    --kagit:#F4F6F7; --yuzey:#FFFFFF;
+    --murekkep:#0F171C; --murekkep2:#485761; --murekkep3:#7B8A94;
+    --cizgi:#D6DCE0; --cizgi2:#E8ECEF;
+    --mavi:#1E6FA8; --kehribar:#C07A1E; --kirmizi:#B23A2C;
+  }
+
+  body{background:var(--kagit);color:var(--murekkep);
+       font-family:var(--sans);font-size:16px;line-height:1.6;
+       -webkit-font-smoothing:antialiased}
+  .sayfa{max-width:830px;margin:0 auto;padding:56px 24px 96px;
+         display:flex;flex-direction:column;gap:44px}
+
+  header{display:flex;flex-direction:column;gap:10px}
+  .ustyazi{font-family:var(--mono);font-size:11.5px;font-weight:600;
+           letter-spacing:.14em;text-transform:uppercase;color:var(--murekkep3)}
+  h1{font-family:var(--mono);font-size:27px;font-weight:600;letter-spacing:-.01em;
+     line-height:1.25;text-wrap:balance}
+  .ozet{color:var(--murekkep2);max-width:64ch}
+
+  section{display:flex;flex-direction:column;gap:16px}
+  h2{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;
+     text-transform:uppercase;color:var(--murekkep3);
+     padding-bottom:9px;border-bottom:1px solid var(--cizgi)}
+  p{max-width:66ch}
+  strong{font-weight:600;color:var(--murekkep)}
+  code{font-family:var(--mono);font-size:.88em;background:var(--cizgi2);
+       padding:.12em .38em;border-radius:4px;color:var(--murekkep)}
+
+  /* ------- şema ------- */
+  .semaKutu{background:var(--yuzey);border:1px solid var(--cizgi);border-radius:10px;
+            padding:8px 4px;overflow-x:auto}
+  svg{display:block;width:100%;height:auto;min-width:660px}
+  .kutu{fill:none;stroke:var(--murekkep2);stroke-width:1.5}
+  .kutuAd{font-family:var(--mono);font-size:13px;font-weight:600;fill:var(--murekkep)}
+  .kutuAlt{font-family:var(--mono);font-size:11px;fill:var(--murekkep3)}
+  .pin{font-family:var(--mono);font-size:12.5px;fill:var(--murekkep)}
+  .not{font-family:var(--mono);font-size:11px;fill:var(--murekkep3)}
+  .telVar{stroke:var(--murekkep2);stroke-width:1.6;fill:none}
+  .telYeni{stroke:var(--kehribar);stroke-width:2.6;fill:none}
+  .ray{stroke:var(--murekkep2);stroke-width:2.4}
+  .nokta{fill:var(--kehribar)}
+  .direnc{fill:var(--yuzey);stroke:var(--kehribar);stroke-width:2}
+  .yeniYazi{font-family:var(--mono);font-size:11px;font-weight:600;fill:var(--kehribar)}
+
+  .lejant{display:flex;flex-wrap:wrap;gap:20px;font-family:var(--mono);
+          font-size:11.5px;color:var(--murekkep2)}
+  .lejant span{display:flex;align-items:center;gap:8px}
+  .cizgiOrn{width:24px;height:0;border-top:2px solid var(--murekkep2)}
+  .cizgiOrn.yeni{border-top:3px solid var(--kehribar)}
+
+  /* ------- tablo ------- */
+  .tabloKutu{overflow-x:auto;border:1px solid var(--cizgi);border-radius:10px;
+             background:var(--yuzey)}
+  table{border-collapse:collapse;width:100%;font-size:14.5px}
+  th,td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--cizgi2)}
+  tr:last-child td{border-bottom:none}
+  th{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;
+     text-transform:uppercase;color:var(--murekkep3);
+     border-bottom:1px solid var(--cizgi)}
+  td.uc{font-family:var(--mono);font-variant-numeric:tabular-nums;
+        color:var(--murekkep);white-space:nowrap}
+  td.sonuc{color:var(--murekkep2)}
+  .iyi{color:var(--mavi);font-weight:600}
+  .dur{color:var(--kehribar);font-weight:600}
+
+  /* ------- uyarı ------- */
+  .uyari{background:var(--yuzey);border:1px solid var(--cizgi);
+         border-left:3px solid var(--kirmizi);border-radius:8px;
+         padding:16px 20px;display:flex;flex-direction:column;gap:7px}
+  .uyari.sari{border-left-color:var(--kehribar)}
+  .uyariAd{font-family:var(--mono);font-size:11px;font-weight:600;
+           letter-spacing:.12em;text-transform:uppercase;color:var(--kirmizi)}
+  .uyari.sari .uyariAd{color:var(--kehribar)}
+  .uyari p{margin:0;font-size:15px;color:var(--murekkep2)}
+
+  footer{font-family:var(--mono);font-size:11.5px;color:var(--murekkep3);
+         border-top:1px solid var(--cizgi);padding-top:18px;line-height:1.7}
+</style>
+
+<div class="sayfa">
+
+<header>
+  <div class="ustyazi">HSS / Miğfer · Taret Elektroniği</div>
+  <h1>Pan sürücüsüne ENA hattı</h1>
+  <p class="ozet">Pan TB6600'ünün <code>ENBL</code> girişi bugüne kadar boşta bırakıldı; bu yüzden
+  sürücü, 24 V verili olduğu her an açık kalıyor ve motor hareket etmese bile sargılardan
+  akım geçiyor. Aşağıdaki tek hat, pan motorunu boştayken susturmayı mümkün kılar.
+  <strong>Yalnızca pan içindir</strong> — tilt sürücüsünün ENA'sı bağlanmadan kalacak.</p>
+</header>
+
+<section>
+  <h2>Şema</h2>
+  <div class="semaKutu">
+    <svg viewBox="0 0 780 452" role="img"
+         aria-label="ESP32-S3 GPIO21 pininden TB6600 pan sürücüsünün ENBL artı ucuna giden yeni hat, üzerinde 10 kiloohm pull-down direnci ve ortak toprak barası">
+
+      <!-- kutu başlıkları -->
+      <text class="kutuAd"  x="150" y="126" text-anchor="middle">ESP32-S3</text>
+      <text class="kutuAlt" x="150" y="142" text-anchor="middle">N16R8</text>
+      <text class="kutuAd"  x="620" y="126" text-anchor="middle">TB6600 #1</text>
+      <text class="kutuAlt" x="620" y="142" text-anchor="middle">PAN · giriş tarafı</text>
+
+      <!-- kutular -->
+      <rect class="kutu" x="60"  y="156" width="180" height="204" rx="6"/>
+      <rect class="kutu" x="520" y="156" width="200" height="204" rx="6"/>
+
+      <!-- mevcut hatlar -->
+      <line class="telVar" x1="240" y1="196" x2="520" y2="196"/>
+      <line class="telVar" x1="240" y1="241" x2="520" y2="241"/>
+      <text class="not" x="380" y="188" text-anchor="middle">mevcut</text>
+
+      <!-- yeni ENA hattı -->
+      <line class="telYeni" x1="240" y1="311" x2="520" y2="311"/>
+      <text class="yeniYazi" x="300" y="303">ENA — eklenecek</text>
+
+      <!-- pin adları -->
+      <text class="pin" x="232" y="200" text-anchor="end">GPIO4</text>
+      <text class="pin" x="232" y="245" text-anchor="end">GPIO5</text>
+      <text class="pin" x="232" y="315" text-anchor="end" fill="var(--kehribar)">GPIO21</text>
+      <text class="pin" x="528" y="200">PUL+</text>
+      <text class="pin" x="528" y="245">DIR+</text>
+      <text class="pin" x="528" y="315" fill="var(--kehribar)">ENBL+</text>
+
+      <!-- eksi uçlar: kutu altından toprağa -->
+      <line class="telVar" x1="560" y1="360" x2="560" y2="412"/>
+      <line class="telVar" x1="620" y1="360" x2="620" y2="412"/>
+      <line class="telVar" x1="680" y1="360" x2="680" y2="412"/>
+      <text class="not" x="560" y="378" text-anchor="middle" transform="rotate(-90 560 378)">PUL−</text>
+      <text class="not" x="620" y="378" text-anchor="middle" transform="rotate(-90 620 378)">DIR−</text>
+      <text class="not" x="680" y="378" text-anchor="middle" transform="rotate(-90 680 378)">ENBL−</text>
+
+      <!-- ESP32 GND -->
+      <line class="telVar" x1="150" y1="360" x2="150" y2="412"/>
+      <text class="not" x="158" y="382">GND</text>
+
+      <!-- pull-down -->
+      <line class="telYeni" x1="380" y1="311" x2="380" y2="341"/>
+      <rect class="direnc" x="368" y="341" width="24" height="42" rx="2"/>
+      <line class="telYeni" x1="380" y1="383" x2="380" y2="412"/>
+      <circle class="nokta" cx="380" cy="311" r="4.5"/>
+      <text class="pin" x="402" y="366" fill="var(--kehribar)">10 kΩ</text>
+
+      <!-- toprak barası -->
+      <line class="ray" x1="140" y1="412" x2="692" y2="412"/>
+      <line class="ray" x1="700" y1="412" x2="740" y2="412"/>
+      <line class="ray" x1="708" y1="421" x2="732" y2="421"/>
+      <line class="ray" x1="715" y1="430" x2="725" y2="430"/>
+      <text class="not" x="416" y="436" text-anchor="middle">ortak GND barası · sürücü başına tek nokta</text>
+    </svg>
+  </div>
+  <div class="lejant">
+    <span><i class="cizgiOrn"></i> mevcut kablolama</span>
+    <span><i class="cizgiOrn yeni"></i> eklenecek</span>
+    <span>ortak katot · − uçları GND'de, + uçları GPIO'da</span>
+  </div>
+</section>
+
+<section>
+  <h2>Uçtan uca bağlantı</h2>
+  <div class="tabloKutu">
+    <table>
+      <thead><tr><th>Kaynak</th><th>Hedef</th><th>Durum</th></tr></thead>
+      <tbody>
+        <tr><td class="uc">GPIO21</td><td class="uc">TB6600 #1 · ENBL+</td><td class="sonuc"><span class="dur">eklenecek</span></td></tr>
+        <tr><td class="uc">GPIO21</td><td class="uc">10 kΩ → GND</td><td class="sonuc"><span class="dur">eklenecek</span> — pull-down</td></tr>
+        <tr><td class="uc">TB6600 #1 · ENBL−</td><td class="uc">ortak GND barası</td><td class="sonuc"><span class="dur">eklenecek</span></td></tr>
+        <tr><td class="uc">GPIO4</td><td class="uc">TB6600 #1 · PUL+</td><td class="sonuc">mevcut</td></tr>
+        <tr><td class="uc">GPIO5</td><td class="uc">TB6600 #1 · DIR+</td><td class="sonuc">mevcut</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Seri direnç gerekmez. TB6600'ün opto girişleri kendi direnciyle geliyor ve ENA statik
+  bir sinyal — PUL gibi yüksek frekansta anahtarlanmadığı için 3,3 V'la sürmek burada
+  sorun çıkarmaz.</p>
+</section>
+
+<section>
+  <h2>Mantık</h2>
+  <div class="tabloKutu">
+    <table>
+      <thead><tr><th>GPIO21</th><th>Opto</th><th>Sürücü çıkışı</th><th>Pan motoru</th></tr></thead>
+      <tbody>
+        <tr><td class="uc">LOW</td><td class="sonuc">iletmiyor</td><td class="sonuc"><span class="iyi">açık</span></td><td class="sonuc">tutuyor — bugünkü davranış, akım geçiyor</td></tr>
+        <tr><td class="uc">HIGH</td><td class="sonuc">iletiyor</td><td class="sonuc"><span class="dur">kapalı</span></td><td class="sonuc">serbest, akım yok, ısınma yok</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Pull-down şart.</strong> Boot sırasında ve reset anında firmware daha pini
+  yapılandırmadan önce ayak havada kalır. 10 kΩ onu kesin LOW'a çeker, yani sürücü
+  <em>açık</em> başlar — açılışta motorun kendini bırakması diye bir sürpriz olmaz.
+  Kapatma kararını yalnızca firmware verir.</p>
+</section>
+
+<section>
+  <h2>Neden GPIO21</h2>
+  <div class="tabloKutu">
+    <table>
+      <thead><tr><th>Pin</th><th>Değerlendirme</th></tr></thead>
+      <tbody>
+        <tr><td class="uc">21</td><td class="sonuc"><span class="iyi">seçildi</span> — temiz dijital pin, özel işlevi yok</td></tr>
+        <tr><td class="uc">13</td><td class="sonuc">çalışır, ama ADC2'de; ileriki bir analog giriş için boş kalsın</td></tr>
+        <tr><td class="uc">47</td><td class="sonuc">çalışır — ikinci tercih</td></tr>
+        <tr><td class="uc">0 · 3 · 45 · 46</td><td class="sonuc">strapping pinleri, boot davranışını bozar</td></tr>
+        <tr><td class="uc">19 · 20</td><td class="sonuc">USB D− / D+</td></tr>
+        <tr><td class="uc">35 · 36 · 37</td><td class="sonuc">oktal PSRAM</td></tr>
+        <tr><td class="uc">48</td><td class="sonuc">onboard RGB LED</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Uyarılar</h2>
+
+  <div class="uyari">
+    <div class="uyariAd">Tilt'e uygulama</div>
+    <p>Tilt sürücüsünün ENA'sı bağlanmadan kalacak. Orada çıkış kapanınca eksen serbest
+    kalır ve namlu düşer. Bu hat yalnızca pan içindir — pan yatay eksende, yerçekimi onu
+    hareket ettirmiyor.</p>
+  </div>
+
+  <div class="uyari sari">
+    <div class="uyariAd">Konum referansı</div>
+    <p>Enkoder mekanik olarak monteli olmadığı için konum yalnızca adım sayımıyla biliniyor.
+    Pan serbestken taret dışarıdan itilirse sayaç kayar ve bunu hiçbir şey fark etmez.
+    Bu yüzden firmware "boşta bırak" değil <strong>zaman aşımlı</strong> yazılacak: son
+    komuttan sonra belirlenen süre geçince kapat, ilk komutta aç.</p>
+  </div>
+</section>
+
+<footer>
+  Taret elektroniği · pan ekseni ENA hattı<br>
+  Bu sayfa Fritzing çizimi değildir — <code>hss_6.fzz</code> dosyasına bağlantıyı çizimi
+  tutan kişi ekleyecek.
+</footer>
+
+</div>

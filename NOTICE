@@ -1,0 +1,51 @@
+Pan–Tilt Turret Control System
+Copyright (C) 2026 Ahmet Efe Nezli (dwifk0 <ahmetefenezli@gmail.com>)
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License, version 3 only, as
+published by the Free Software Foundation. See the LICENSE file.
+
+Documentation, drawings and diagrams in docs/ are licensed under
+Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
+    https://creativecommons.org/licenses/by-sa/4.0/
+
+--------------------------------------------------------------------------
+Third-party components
+--------------------------------------------------------------------------
+
+This project builds on, but does not redistribute, the following. Each remains
+under its own license and its own copyright holders.
+
+  Ultralytics YOLO            AGPL-3.0-only
+    The detection pipeline (scripts/hailo_tespit.py, scripts/onnx_tespit.py,
+    scripts/kamera_tespit.py) consumes models trained with Ultralytics YOLO and
+    parses their output format. Ultralytics is AGPL-3.0; this project is
+    licensed AGPL-3.0-only accordingly.
+    https://github.com/ultralytics/ultralytics
+
+  Hailo Dataflow Compiler / HailoRT / hailort-drivers
+    Hailo AI proprietary and open-source components, per Hailo's own terms.
+    derleme/ contains only our compilation recipe, not Hailo software.
+    https://github.com/hailo-ai
+
+  canonical/pi-ai-kit-ubuntu
+    pi_kurulum/docker-compose.override.yaml is an override for this upstream
+    project and does not modify or vendor it.
+    https://github.com/canonical/pi-ai-kit-ubuntu
+
+  ROS 2 Jazzy Jalisco          Apache-2.0
+  Arduino ESP32 core           LGPL-2.1 / Apache-2.0
+
+--------------------------------------------------------------------------
+Not included in this repository
+--------------------------------------------------------------------------
+
+  * The PyQt ground-station interface, which was written by other members of
+    the team and is their work, not ours.
+  * Mechanical CAD models and drawings, which belong to the mechanical team.
+  * Trained model weights and .hef binaries.
+  * Calibration constants measured on the physical machine. Where a constant
+    is required, the structure is present and the value is left at zero;
+    how each one is measured is documented rather than the value itself.
+  * Credentials, network addresses and host names, which are replaced with
+    placeholders such as <TARET_IP>.

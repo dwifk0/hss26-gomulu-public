@@ -1,0 +1,7 @@
+# HSS eki — upstream docker-compose.yaml dosyasina dokunmadan calisma alanini baglar.
+# docker compose bu dosyayi otomatik birlestirir.
+services:
+  hailo-ubuntu-pi:
+    volumes:
+      - /home/pi/hss_workspace:/hss_workspace
+      - /home/pi/hss_ros2_ws:/hss_ros2_ws

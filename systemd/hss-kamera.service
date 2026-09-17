@@ -1,0 +1,21 @@
+[Unit]
+Description=HSS kamera + Hailo tespit (8080 MJPEG / 8081 JSON)
+Requires=hss-hailo.service
+After=hss-hailo.service
+
+[Service]
+Type=simple
+# Kamera container ICINDE kosar: rpicam-vid host tarafinda yok, NPU da
+# container icinden erisiliyor.
+ExecStartPre=/bin/sh -c "until /usr/bin/docker exec pi-ai-kit-ubuntu-hailo-ubuntu-pi-1 true 2>/dev/null; do sleep 2; done"
+ExecStart=/usr/bin/docker exec pi-ai-kit-ubuntu-hailo-ubuntu-pi-1 \
+          python3 -u /hss_workspace/scripts/kamera_tespit.py --dondur 180
+# docker exec SIGTERM icerideki surece gecmez; kalan sure Hailoyu tutar ve
+# yeniden baslatma HAILO_OUT_OF_PHYSICAL_DEVICES (74) ile duser. Port uzerinden
+# oldurmek kesin - pkill -f kullanma.
+ExecStopPost=-/usr/bin/docker exec pi-ai-kit-ubuntu-hailo-ubuntu-pi-1 fuser -k 8080/tcp
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

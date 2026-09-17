@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# model ikilileri ve agirliklar bu depoya girmez
+*.hef
+*.pt
+*.onnx
+*.engine
+
+# derlenmis firmware
+*.bin
+*.elf
+*.hex
+build/
+
+# kalibrasyon ve olculen sabitler
+kalibrasyon.h
+*.local.*
+
+# isletim sistemi
+.DS_Store
+Thumbs.db

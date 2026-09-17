@@ -1,0 +1,7 @@
+# Miğfer yarışma modeli — sınıf adları
+# KAYNAK: asıl_300.best.pt içindeki model.names (ultralytics 8.4.120)
+# SIRA EĞİTİMDEKİ SIRADIR, DEĞİŞTİRME. Model indeks döndürür, ad buradan gelir.
+f16
+helikopter
+fuze
+drone

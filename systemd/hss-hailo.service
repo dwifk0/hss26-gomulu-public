@@ -1,0 +1,17 @@
+[Unit]
+Description=HSS Hailo container (pi-ai-kit-ubuntu)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/pi/pi-ai-kit-ubuntu
+# --build KULLANMA: imajdaki hailo-all paketi yeniden kurulumda gidiyor.
+ExecStart=/usr/bin/docker compose up -d --no-build
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

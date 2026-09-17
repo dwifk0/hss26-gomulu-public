@@ -1,0 +1,1067 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HSS Donanım Konsolu</title>
+<style>
+  /* ------------------------------------------------------------------
+     Apple arayuz dili:
+       - Metin SF Pro (sistem yazi tipi), SAYILAR SF Mono — teknik veride
+         rakamlar sabit genislikte kalsin diye ayrim bilincli.
+       - Renk: Apple sistem grileri ve sistem renkleri; anlam disinda renk yok.
+       - Ayraclar sac teli, kenarliklar degil; derinlik golge ve katmanla.
+       - Kartlar "inset grouped list" mantiginda, genis kose yaricapli.
+       - Acik ve koyu tema (prefers-color-scheme) — tezgahta gunduz/gece.
+     ------------------------------------------------------------------ */
+  :root{
+    color-scheme:dark light;
+    --metin:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",
+            "Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    --sayi:ui-monospace,"SF Mono","SFMono-Regular","Cascadia Mono",Menlo,Consolas,monospace;
+
+    /* koyu tema — Apple sistem grileri */
+    --zemin:#000000;
+    --kart:rgba(28,28,30,.86);
+    --kart2:rgba(44,44,46,.7);
+    --ayrac:rgba(84,84,88,.5);
+    --y1:rgba(255,255,255,.94);      /* birincil metin */
+    --y2:rgba(235,235,245,.6);       /* ikincil */
+    --y3:rgba(235,235,245,.32);      /* ucuncul */
+    --dolgu:rgba(118,118,128,.24);   /* sistem dolgu */
+    --mavi:#0A84FF; --yesil:#30D158; --turuncu:#FF9F0A; --kirmizi:#FF453A;
+    --golge:0 0 0 .5px rgba(255,255,255,.06), 0 8px 26px -14px rgba(0,0,0,.9);
+    --bulanik:saturate(180%) blur(20px);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --zemin:#F2F2F7;
+      --kart:rgba(255,255,255,.9);
+      --kart2:rgba(120,120,128,.09);
+      --ayrac:rgba(60,60,67,.2);
+      --y1:rgba(0,0,0,.92); --y2:rgba(60,60,67,.62); --y3:rgba(60,60,67,.32);
+      --dolgu:rgba(118,118,128,.12);
+      --mavi:#007AFF; --yesil:#34C759; --turuncu:#FF9500; --kirmizi:#FF3B30;
+      --golge:0 0 0 .5px rgba(0,0,0,.05), 0 8px 24px -16px rgba(0,0,0,.35);
+    }
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;padding-bottom:34px;background:var(--zemin);color:var(--y1);
+       font:15px/1.45 var(--metin);
+       -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ---------------- ust serit: yarisaydam malzeme ---------------- */
+  header{position:sticky;top:0;z-index:20;
+         display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+         padding:12px 20px;
+         background:color-mix(in srgb, var(--zemin) 72%, transparent);
+         -webkit-backdrop-filter:var(--bulanik);backdrop-filter:var(--bulanik);
+         border-bottom:.5px solid var(--ayrac)}
+  h1{margin:0 12px 0 0;font-size:17px;font-weight:600;letter-spacing:-.02em;
+     white-space:nowrap;color:var(--y1)}
+  h1 b{font-weight:400;color:var(--y2)}
+
+  /* durum kapsulleri */
+  .rozet{display:inline-flex;align-items:center;gap:6px;
+         padding:4px 11px 4px 9px;border-radius:980px;
+         font-size:12px;font-weight:500;letter-spacing:-.01em;white-space:nowrap;
+         color:var(--y2);background:var(--dolgu);border:none;
+         transition:background .2s,color .2s}
+  .rozet::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;
+                 background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 18%,transparent)}
+  .ok{color:var(--yesil);background:color-mix(in srgb,var(--yesil) 15%,transparent)}
+  .uyari{color:var(--turuncu);background:color-mix(in srgb,var(--turuncu) 15%,transparent)}
+  .kotu{color:var(--kirmizi);background:color-mix(in srgb,var(--kirmizi) 16%,transparent)}
+  .kotu::before{animation:nabiz 1.6s ease-in-out infinite}
+  @keyframes nabiz{0%,100%{opacity:1}50%{opacity:.35}}
+  .bos{color:var(--y3)}
+  #geriGetir{cursor:pointer;margin-left:auto}
+  #geriGetir:active{opacity:.6}
+
+  /* ---------------- kartlar ---------------- */
+  main{display:grid;gap:16px;padding:16px 20px;
+       grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+       max-width:1800px;margin:0 auto}
+  section{background:var(--kart);border-radius:18px;padding:16px 18px 18px;
+          box-shadow:var(--golge);
+          -webkit-backdrop-filter:var(--bulanik);backdrop-filter:var(--bulanik)}
+  section.gizli{display:none}
+
+  h2{display:flex;align-items:center;gap:8px;margin:0 0 12px;
+     font-size:13px;font-weight:590;letter-spacing:.01em;color:var(--y2);
+     text-transform:uppercase}
+  h2 .bos{font-size:12px;font-weight:400;text-transform:none;letter-spacing:-.01em}
+  h2 .kapat{margin-left:auto;flex:none;cursor:pointer;
+            width:22px;height:22px;line-height:20px;text-align:center;
+            border-radius:50%;background:var(--dolgu);color:var(--y2);
+            font-size:14px;font-weight:400;border:none;
+            transition:background .15s,color .15s,transform .1s}
+  h2 .kapat:hover{background:color-mix(in srgb,var(--kirmizi) 22%,transparent);color:var(--kirmizi)}
+  h2 .kapat:active{transform:scale(.9)}
+
+  /* ---------------- olcum satirlari: gruplu liste ---------------- */
+  table{width:100%;border-collapse:collapse}
+  tr+tr td{border-top:.5px solid var(--ayrac)}
+  td{padding:9px 0;vertical-align:baseline}
+  td.ad{color:var(--y2);font-size:14px;letter-spacing:-.01em;
+        white-space:nowrap;padding-right:12px}
+  td.dg{text-align:right;white-space:nowrap;font-family:var(--sayi);
+        font-size:14px;font-variant-numeric:tabular-nums;
+        font-feature-settings:"tnum" 1;letter-spacing:-.02em}
+  .buyuk{font-family:var(--sayi);font-size:28px;font-weight:500;
+         letter-spacing:-.04em;color:var(--y1)}
+  .birim{color:var(--y3);font-size:12px;font-family:var(--metin);margin-left:3px}
+
+  /* ---------------- kontroller ---------------- */
+  button,select,input{font-family:var(--metin);font-size:15px;color:var(--y1);
+                      border:none;border-radius:11px;background:var(--kart2)}
+  button{padding:11px 14px;cursor:pointer;font-weight:500;letter-spacing:-.01em;
+         touch-action:none;-webkit-user-select:none;user-select:none;
+         transition:background .15s,transform .08s,color .15s}
+  button:hover{background:color-mix(in srgb,var(--mavi) 16%,var(--kart2))}
+  button:active,button.basili{background:var(--mavi);color:#fff;transform:scale(.97)}
+  button.tehlike{color:var(--kirmizi)}
+  button.tehlike:hover{background:color-mix(in srgb,var(--kirmizi) 18%,transparent)}
+  button.tehlike:active{background:var(--kirmizi);color:#fff}
+  select,input{padding:10px 12px;-webkit-appearance:none;appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--y2) 50%),
+                         linear-gradient(135deg,var(--y2) 50%,transparent 50%);
+         background-position:calc(100% - 15px) 51%,calc(100% - 10px) 51%;
+         background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px}
+  input::placeholder{color:var(--y3)}
+  select:focus,input:focus{outline:none;box-shadow:0 0 0 3.5px color-mix(in srgb,var(--mavi) 32%,transparent)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:230px;margin:0 auto}
+  .pad button{padding:16px 0;font-size:17px;border-radius:14px}
+  .satir{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .satir button{flex:1;min-width:92px}
+
+  /* ---------------- gostergeler ---------------- */
+  .cubuk{height:7px;background:var(--dolgu);border-radius:980px;overflow:hidden;margin-top:10px}
+  .cubuk i{display:block;height:100%;border-radius:980px;background:var(--mavi);
+           transition:width .3s cubic-bezier(.32,.72,0,1)}
+  #akimGraf{width:100%;height:46px;display:block;margin-top:12px;
+            background:var(--kart2);border-radius:11px}
+
+  /* ---------------- kamera ---------------- */
+  .kamKutu{position:relative;border-radius:14px;overflow:hidden;min-height:150px;
+           background:#000;line-height:0;
+           display:flex;align-items:center;justify-content:center}
+  .kamKutu img{display:block;width:100%;height:auto;max-height:66vh;object-fit:contain}
+  #tuval{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+  .kamYok{position:absolute;color:var(--y3);font-size:13px;line-height:1;
+          letter-spacing:-.01em;font-family:var(--metin)}
+
+  /* ---------------- tespit listesi ---------------- */
+  #tespitListe div{display:flex;justify-content:space-between;gap:12px;
+                   padding:7px 0;font-size:14px;letter-spacing:-.01em}
+  #tespitListe div+div{border-top:.5px solid var(--ayrac)}
+  #tespitListe .sinif{color:var(--yesil);font-weight:500}
+  #tespitListe span:last-child{font-family:var(--sayi);font-size:13px;color:var(--y2);
+                               font-variant-numeric:tabular-nums}
+
+  /* ---------------- gunluk / terminal ---------------- */
+  /* Terminal hissi icin ayraclar KALDIRILDI ve satir araligi sikildi; satir
+     tipi ayrimi artik cizgiyle degil renk + on ek ile yapiliyor. */
+  #gunluk{height:260px;overflow-y:auto;padding:10px 12px;border-radius:12px;
+          background:var(--kart2);font-family:var(--sayi);font-size:12px;line-height:1.5;
+          scrollbar-width:thin;scrollbar-color:var(--ayrac) transparent;
+          user-select:text;-webkit-user-select:text;cursor:text}
+  #gunluk div{padding:1px 0;white-space:pre-wrap;word-break:break-word;color:var(--y2)}
+  #gunluk .zaman{color:var(--y3);margin-right:8px;font-size:11px}
+  #gunluk .gcmd{color:var(--mavi)}                    /* bizim yolladigimiz */
+  #gunluk .gred{color:var(--kirmizi)}                 /* RED: / REDDEDILDI */
+  #gunluk .gok {color:var(--yesil)}                   /* ATIS / kaydedildi */
+  #gunluk .gyerel{color:var(--y3);font-style:italic}  /* konsolun kendi notu */
+  .red{color:var(--turuncu)}
+
+  /* durakladiginda ve arama aciklken ust rozet */
+  #gDurum{float:right;font-family:var(--metin);font-size:11px;font-weight:590;
+          letter-spacing:-.01em;color:var(--turuncu);opacity:0;transition:opacity .2s}
+  #gDurum.acik{opacity:1}
+
+  /* komut satiri: onunde terminal istemi */
+  #istemSatir{display:flex;align-items:center;gap:8px;margin-top:10px;
+              background:var(--kart2);border-radius:12px;padding:0 12px;
+              border:.5px solid transparent;transition:border-color .18s}
+  #istemSatir:focus-within{border-color:var(--mavi)}
+  #istem{font-family:var(--sayi);font-size:13px;color:var(--mavi);
+         font-weight:600;user-select:none}
+  /* Hayalet oneri: input'un ICINE yazi cizemedigimiz icin altina birebir
+     hizalanmis bir katman koyuyoruz. Yazilan kisim SEFFAF, kalani soluk —
+     input'un kendi metni ustune bindigi icin tam hizali gorunuyor. Font,
+     boyut ve dolgu iki tarafta AYNI olmali, yoksa kayar. */
+  #girdiSar{position:relative;flex:1;display:flex;min-width:0}
+  #hamKomut{width:100%;background:none!important;border:none!important;
+            box-shadow:none!important;padding:11px 0!important;
+            font-family:var(--sayi)!important;font-size:13px!important;
+            position:relative;z-index:1}
+  #hayalet{position:absolute;left:0;top:0;height:100%;
+           display:flex;align-items:center;
+           font-family:var(--sayi);font-size:13px;white-space:pre;
+           color:var(--y3);pointer-events:none;overflow:hidden;
+           max-width:100%;z-index:0}
+  #hayalet b{color:transparent;font-weight:400}
+  #tamamHint{font-family:var(--sayi);font-size:11.5px;color:var(--y3);
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44%}
+
+  /* sag tik menusu — macOS baglam menusu gorunumu */
+  #menu{position:fixed;z-index:99;min-width:212px;padding:5px;display:none;
+        background:var(--kart);backdrop-filter:var(--bulanik);
+        -webkit-backdrop-filter:var(--bulanik);
+        border-radius:12px;box-shadow:0 0 0 .5px var(--ayrac),0 12px 34px -10px rgba(0,0,0,.55);
+        font-family:var(--metin);font-size:13px}
+  #menu.acik{display:block}
+  #menu button{display:flex;justify-content:space-between;gap:18px;width:100%;
+               background:none;border:none;box-shadow:none;text-align:left;
+               padding:6px 10px;border-radius:7px;color:var(--y1);
+               font-size:13px;font-weight:400;letter-spacing:-.01em}
+  #menu button:hover{background:var(--mavi);color:#fff}
+  #menu button:hover kbd{color:rgba(255,255,255,.7)}
+  #menu button:active{transform:none}
+  #menu kbd{font-family:var(--sayi);font-size:11px;color:var(--y3);
+            background:none;border:none;padding:0}
+  #menu hr{border:none;border-top:.5px solid var(--ayrac);margin:5px 8px}
+
+  .ipucu{color:var(--y3);font-size:12.5px;line-height:1.45;margin-top:11px;
+         letter-spacing:-.01em}
+  .ipucu b{color:var(--y2);font-weight:500}
+  label.ipucu{margin-top:0;font-size:13px;color:var(--y2)}
+  input[type=checkbox]{width:auto;accent-color:var(--mavi);
+                       transform:scale(1.15);margin-right:2px}
+
+  @media (max-width:540px){
+    header{padding:10px 14px}
+    main{padding:12px 14px;gap:12px}
+    section{border-radius:16px;padding:14px 15px 16px}
+    h1{font-size:16px}
+    .buyuk{font-size:25px}
+    .pad{max-width:100%}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+  }
+</style>
+
+<header>
+  <h1>HSS <b>DONANIM KONSOLU</b></h1>
+  <span id="rBag"   class="rozet bos">BAĞLANTI</span>
+  <span id="rEstop" class="rozet bos">ACİL STOP</span>
+  <span id="rHazir" class="rozet bos">HAZIR</span>
+  <span id="rAtis"  class="rozet bos">ATIŞ İZNİ</span>
+  <span id="rGuc"   class="rozet bos">GÜÇ</span>
+  <span id="rHar"   class="rozet bos">HAREKET</span>
+  <span id="rPanSur" class="rozet bos" title="pan TB6600 ENA durumu">PAN SÜRÜCÜ</span>
+  <span id="rYas"   class="rozet bos" title="son telemetriden bu yana geçen süre">—</span>
+  <span id="geriGetir" class="rozet bos" style="display:none"
+        title="gizlenen panelleri geri getir">gizli panel: 0 · geri getir</span>
+</header>
+
+<main>
+  <section data-panel="kamera" style="grid-column:1/-1">
+    <h2>Kamera · IMX708 <span class="bos" id="kamOlcu">—</span></h2>
+    <div class="kamKutu">
+      <img id="kam" alt="kamera akışı">
+      <canvas id="tuval"></canvas>
+      <div id="kamYok" class="kamYok">akış yok</div>
+    </div>
+    <div class="satir">
+      <select id="kamCoz" style="flex:2">
+        <option value="640x480">640 × 480 · en hafif · CPU %52</option>
+        <option value="1280x720" selected>1280 × 720 · varsayılan · CPU %58</option>
+        <option value="1640x1232">1640 × 1232 · geniş görüş</option>
+        <option value="1920x1080">1920 × 1080 · full HD · CPU %95</option>
+        <option value="2028x1520">2028 × 1520 · ağır</option>
+      </select>
+      <label class="ipucu" style="margin:0;display:flex;align-items:center;gap:5px;white-space:nowrap">
+        <input type="checkbox" id="kutuGoster" checked style="width:auto">tespit kutuları
+      </label>
+      <select id="kamFps" style="flex:1">
+        <option value="15">15 fps</option>
+        <option value="30" selected>30 fps</option>
+        <option value="dur">— akışı durdur</option>
+      </select>
+      <button id="bKamUygula">UYGULA</button>
+    </div>
+    <div class="ipucu">Değişiklik <b>rpicam-vid'i yeniden kurar</b> — akış ~1 sn kesilir.
+      CPU değerleri tek çekirdek yüzdesi, Pi 5'te ölçüldü (2026-08-06); üçünde de
+      tespit 30 fps ve atlanan kare 0. Tespit her hâlükârda 640×640'a küçültülerek
+      yapıldığı için <b>çözünürlüğü artırmak isabeti artırmaz</b>, yalnız
+      görüntüyü büyütür — 1080p'nin bedeli 720p'nin ~1,6 katı CPU.</div>
+  </section>
+
+  <section data-panel="tespit">
+    <h2>Hailo Tespit <span class="bos" id="tespitOzet">—</span></h2>
+    <div id="tespitListe" style="min-height:38px"></div>
+    <div class="satir">
+      <input id="tEsik" placeholder="eşik 0.40" inputmode="decimal" style="flex:2">
+      <button id="bEsik">EŞİK</button>
+    </div>
+    <div class="ipucu" id="tespitNot">Model genel COCO — yarışma sınıfları (İHA/F-16/füze) yok.</div>
+  </section>
+
+  <section data-panel="eksen">
+    <h2>Eksenler</h2>
+    <table>
+      <tr><td class="ad">pan</td>
+          <td class="dg"><span id="pan" class="buyuk">—</span><span class="birim">°</span></td></tr>
+      <tr><td class="ad">pan (ham, birikimli)</td><td class="dg" id="panHam">—</td></tr>
+      <tr><td class="ad">tilt</td>
+          <td class="dg"><span id="tilt" class="buyuk">—</span><span class="birim">°</span></td></tr>
+      <tr><td class="ad">durum</td><td class="dg" id="mesgul">—</td></tr>
+    </table>
+  </section>
+
+  <section data-panel="enkoder">
+    <h2>Enkoder · AS5600</h2>
+    <table>
+      <tr><td class="ad">pan ham</td><td class="dg" id="encp">—</td></tr>
+      <tr><td class="ad">pan açı (motor mili)</td><td class="dg" id="encpDeg">—</td></tr>
+      <tr><td class="ad">tilt ham</td><td class="dg" id="enct">—</td></tr>
+      <tr><td class="ad">tilt açı (motor mili)</td><td class="dg" id="enctDeg">—</td></tr>
+    </table>
+    <div class="ipucu" id="encNot"></div>
+  </section>
+
+  <section data-panel="lidar">
+    <h2>LiDAR · TF02-Pro</h2>
+    <table>
+      <tr><td class="ad">mesafe</td>
+          <td class="dg"><span id="lidar" class="buyuk">—</span><span class="birim">cm</span></td></tr>
+      <tr><td class="ad">sinyal gücü</td><td class="dg" id="lidarSig">—</td></tr>
+    </table>
+    <div class="cubuk"><i id="lidarCubuk" style="width:0"></i></div>
+    <div class="ipucu">çubuk 0–1500 cm</div>
+  </section>
+
+  <section data-panel="imu">
+    <h2>IMU · MPU6500 <span class="bos">(manyetometre yok)</span></h2>
+    <table>
+      <tr><td class="ad">ivme x / y / z</td><td class="dg" id="ivme">—</td></tr>
+      <tr><td class="ad">|ivme|</td><td class="dg" id="ivmeBoy">—</td></tr>
+      <tr><td class="ad">jiro x / y / z</td><td class="dg" id="jiro">—</td></tr>
+      <tr><td class="ad">eğim (yatış / yunuslama)</td><td class="dg" id="egim">—</td></tr>
+      <tr><td class="ad">çip sıcaklığı</td><td class="dg" id="isi">—</td></tr>
+    </table>
+  </section>
+
+  <section data-panel="akim">
+    <h2>Akım · ACS724</h2>
+    <table>
+      <tr><td class="ad">motor akımı</td>
+          <td class="dg"><span id="akim" class="buyuk">—</span><span class="birim">A</span></td></tr>
+      <tr><td class="ad">tepe (bu oturum)</td><td class="dg" id="akimTepe">—</td></tr>
+      <tr><td class="ad">bus gerilimi</td><td class="dg" id="bus">—</td></tr>
+    </table>
+    <div class="cubuk"><i id="akimCubuk" style="width:0"></i></div>
+    <canvas id="akimGraf"></canvas>
+    <div class="ipucu">çubuk 0–3 A · grafik son ~30 sn · bus 0,000 ise INA226 yok (sökülüyor)</div>
+  </section>
+
+  <section data-panel="kontrol">
+    <h2>Manuel Kontrol</h2>
+    <div class="pad">
+      <span></span><button data-jog="0,1">▲</button><span></span>
+      <button data-jog="-1,0">◀</button>
+      <button id="bDur">DUR</button>
+      <button data-jog="1,0">▶</button>
+      <span></span><button data-jog="0,-1">▼</button><span></span>
+    </div>
+    <div class="satir">
+      <button id="bAtes">ATEŞ</button>
+      <button id="bReset">E-STOP RESET</button>
+    </div>
+    <div class="satir">
+      <button id="bKes" class="tehlike">GÜÇ KES</button>
+      <button id="bVer">GÜÇ VER</button>
+    </div>
+    <div class="satir">
+      <button id="bPanAc">PAN SÜRÜCÜ AÇ</button>
+      <button id="bPanKap">KAPAT</button>
+    </div>
+    <div class="satir">
+      <input id="panSure" placeholder="boşta kapatma sn — 0 = hiç kapatma"
+             inputmode="numeric" style="flex:2">
+      <button id="bPanSure">SÜRE</button>
+    </div>
+    <div class="ipucu">Düğmeyi <b>basılı tut</b> — bıraktığında durur.
+      Ok tuşları da çalışır. Bağlantı koparsa taret kendiliğinden durur.</div>
+    <div class="ipucu">Pan sürücüsü kapalıyken motor <b>serbest</b> ve ısınmaz, ama
+      taret dışarıdan itilirse konum sayacı sessizce kayar — enkoder takılı değil.
+      Hareket komutu gelince kendiliğinden açılır. Süre <b>NVS'e yazılmaz</b>,
+      ESP32 resetlenince 60 sn'ye döner.</div>
+  </section>
+
+  <section data-panel="yasak">
+    <h2>Yasak Sektör</h2>
+    <div class="satir">
+      <input id="yBas" placeholder="başlangıç °" inputmode="decimal" style="flex:1">
+      <input id="yBit" placeholder="bitiş °" inputmode="decimal" style="flex:1">
+    </div>
+    <div class="satir">
+      <button id="bYasakEkle">EKLE</button>
+      <button id="bYasakSil">TEMİZLE</button>
+    </div>
+    <div class="ipucu">Atış izni rozeti sektöre girince kırmızıya döner.
+      Kalıcı olması için ham komutla <b>kaydet</b> ver.</div>
+  </section>
+
+  <section data-panel="gunluk" style="grid-column:1/-1">
+    <h2>Terminal · ESP32 <span id="gDurum">KAYDIRMA DURDU</span></h2>
+    <div id="gunluk"></div>
+    <div id="istemSatir">
+      <span id="istem">›</span>
+      <span id="girdiSar">
+        <span id="hayalet" aria-hidden="true"></span>
+        <input id="hamKomut" placeholder="komut yaz — Tab öneriyi kabul eder, ↑ geçmiş, sağ tık menü"
+               autocomplete="off" autocapitalize="off" spellcheck="false">
+      </span>
+      <span id="tamamHint"></span>
+    </div>
+  </section>
+</main>
+
+<div id="menu"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+let akimTepe = 0, sonGunluk = 0;
+
+// ---- akim gecmisi (son ~30 sn, 7 Hz yoklamada ~210 nokta) ----
+const AKIM_N = 210;
+const akimGec = [];
+const temaRengi = ad => getComputedStyle(document.documentElement)
+                          .getPropertyValue(ad).trim() || "#0A84FF";
+
+// Canvas addColorStop CSS color-mix() KABUL ETMEZ; hex'i rgba'ya kendimiz ceviriyoruz.
+function saydam(renk, alfa){
+  const h = renk.replace("#","");
+  if(h.length !== 6) return renk;                    // zaten rgba() ise dokunma
+  const n = parseInt(h,16);
+  return `rgba(${n>>16&255},${n>>8&255},${n&255},${alfa})`;
+}
+
+function akimCiz(){
+  const c = $("#akimGraf");
+  if(!c || c.offsetParent === null) return;          // panel gizliyse ugrasma
+  const g = c.clientWidth, y = c.clientHeight;
+  if(!g || !y) return;
+  const oran = window.devicePixelRatio || 1;
+  if(c.width !== g*oran || c.height !== y*oran){ c.width = g*oran; c.height = y*oran; }
+  const x = c.getContext("2d");
+  x.setTransform(oran,0,0,oran,0,0);
+  x.clearRect(0,0,g,y);
+  if(akimGec.length < 2) return;
+
+  // Olcek: en az 0,5 A tavan, tepe degere gore buyur (duz cizgi gorunmesin)
+  const tavan = Math.max(0.5, ...akimGec.map(Math.abs)) * 1.15;
+
+  x.strokeStyle = temaRengi("--ayrac"); x.lineWidth = 1;   // orta cizgi (0 A)
+  x.beginPath(); x.moveTo(0, y/2); x.lineTo(g, y/2); x.stroke();
+
+  const nx = i => i * g / (AKIM_N - 1);
+  const ny = v => y/2 - (v / tavan) * (y/2 - 2);
+  const bas = AKIM_N - akimGec.length;
+
+  const mavi = temaRengi("--mavi");
+  const dolgu = x.createLinearGradient(0,0,0,y);
+  dolgu.addColorStop(0, saydam(mavi, .34));
+  dolgu.addColorStop(1, saydam(mavi, 0));
+  x.beginPath(); x.moveTo(nx(bas), y/2);
+  akimGec.forEach((v,i) => x.lineTo(nx(bas+i), ny(v)));
+  x.lineTo(nx(bas+akimGec.length-1), y/2); x.closePath();
+  x.fillStyle = dolgu; x.fill();
+
+  x.beginPath();
+  akimGec.forEach((v,i) => i ? x.lineTo(nx(bas+i), ny(v)) : x.moveTo(nx(bas), ny(v)));
+  x.strokeStyle = mavi; x.lineWidth = 2;
+  x.lineJoin = "round"; x.lineCap = "round"; x.stroke();
+
+  x.fillStyle = temaRengi("--y3");
+  x.font = "10px ui-monospace,'SF Mono',Menlo,monospace";  // canvas CSS degiskeni tanimaz
+  x.fillText(`±${tavan.toFixed(2)} A`, 4, 10);
+}
+
+// ---- komut gönderimi ----
+async function komut(p){
+  try{ await fetch("/komut", {method:"POST", headers:{"Content-Type":"application/json"},
+                              body:JSON.stringify(p)}); }
+  catch(e){ /* bağlantı yoksa sessizce düş; rozet zaten uyarır */ }
+}
+
+// ---- jog: basılı tutuldukça tekrarla (sunucu gözcüsü 0,45 sn'de kesiyor) ----
+let jogTimer = null;
+function jogBasla(pan, tilt){
+  jogBirak();
+  const yolla = () => komut({tip:"jog", pan:pan, tilt:tilt});
+  yolla();
+  jogTimer = setInterval(yolla, 100);
+}
+function jogBirak(){
+  if(jogTimer){ clearInterval(jogTimer); jogTimer = null; komut({tip:"dur"}); }
+}
+for(const b of document.querySelectorAll("[data-jog]")){
+  const [p,t] = b.dataset.jog.split(",").map(Number);
+  const bas = e => { e.preventDefault(); b.classList.add("basili"); jogBasla(p,t); };
+  const bit = () => { b.classList.remove("basili"); jogBirak(); };
+  b.addEventListener("mousedown", bas);
+  b.addEventListener("touchstart", bas, {passive:false});
+  b.addEventListener("mouseup", bit);
+  b.addEventListener("mouseleave", bit);
+  b.addEventListener("touchend", bit);
+  b.addEventListener("touchcancel", bit);
+}
+// Sekme arkaya alınırsa/pencere kapanırsa hareket sürmesin
+window.addEventListener("blur", jogBirak);
+document.addEventListener("visibilitychange", () => { if(document.hidden) jogBirak(); });
+
+const TUS = {ArrowUp:[0,1], ArrowDown:[0,-1], ArrowLeft:[-1,0], ArrowRight:[1,0]};
+addEventListener("keydown", e => {
+  if(e.target.tagName === "INPUT") return;
+  if(TUS[e.key] && !e.repeat){ e.preventDefault(); jogBasla(...TUS[e.key]); }
+});
+addEventListener("keyup", e => { if(TUS[e.key]) jogBirak(); });
+
+$("#bDur").onclick   = () => komut({tip:"dur"});
+$("#bAtes").onclick  = () => komut({tip:"ates"});
+$("#bReset").onclick = () => komut({tip:"estopreset"});
+$("#bKes").onclick   = () => komut({tip:"guc", ver:false});
+$("#bVer").onclick   = () => komut({tip:"guc", ver:true});
+$("#bPanAc").onclick  = () => komut({tip:"ham", komut:"panac"});
+$("#bPanKap").onclick = () => komut({tip:"ham", komut:"pankap"});
+$("#bPanSure").onclick = () => {
+  const v = $("#panSure").value.trim();
+  if(v !== "") komut({tip:"ham", komut:`panena ${v}`});
+};
+$("#bYasakSil").onclick  = () => komut({tip:"ham", komut:"yasak temizle"});
+$("#bYasakEkle").onclick = () => {
+  const a = $("#yBas").value.trim(), b = $("#yBit").value.trim();
+  if(a !== "" && b !== "") komut({tip:"ham", komut:`yasak ${a} ${b}`});
+};
+// ==================== TERMİNAL ====================
+// Firmware'in "yardim" ciktisindan cikarilmis komut listesi. Tamamlama ve sag
+// tik menusu bunu kullanir; firmware'e komut eklenirse BURAYA DA ekle.
+const KOMUTLAR = [
+  "d","durum","yardim","t 0","t 1",
+  "pan ","tilt ","padim ","tadim ","dur",
+  "sifirla","sifirla pan","sifirla tilt","ref tilt",
+  "mikroadim ","hiz ","rampa ","tiltlim ",
+  "yasak ","yasak temizle","pay ",
+  "akimtest","hiztest","ates",
+  "estop","estop reset","estop bypass on","estop bypass off",
+  "guc","guc kes","guc ver",
+  "sunt ","acs","acs off","acs sifir","acs ham","acs kal ",
+  "tara","kaydet"
+];
+
+const girdi   = $("#hamKomut");
+const kutuLog = $("#gunluk");
+
+// ---- gecmis (localStorage'da kalir; sayfa yenilense de durur) ----
+let gecmis = [];
+try{ gecmis = JSON.parse(localStorage.getItem("hss_gecmis") || "[]"); }catch(e){}
+let gIdx = gecmis.length;      // gecmis.length = "yeni satir" konumu
+let taslak = "";               // ↑'e basmadan once yazilmakta olan satir
+
+function gecmiseYaz(k){
+  if(gecmis[gecmis.length - 1] !== k) gecmis.push(k);   // ustuste ayni komutu tutma
+  while(gecmis.length > 200) gecmis.shift();
+  gIdx = gecmis.length;
+  try{ localStorage.setItem("hss_gecmis", JSON.stringify(gecmis)); }catch(e){}
+}
+
+function hamGonder(){
+  const k = girdi.value.trim();
+  if(!k) return;
+  yerelSatir("› " + k, "gcmd");        // terminal gibi yankila
+  komut({tip:"ham", komut:k});
+  gecmiseYaz(k);
+  girdi.value = "";
+  tamamAdaylar = null;
+  $("#tamamHint").textContent = "";
+}
+
+// ---- hayalet oneri (fish/zsh gibi) ----
+// Yazarken en olasi tamamlamayi soluk metin olarak gosterir; Tab veya satir
+// sonunda -> kabul eder. Once GECMIS (en yeniden eskiye) taranir, sonra komut
+// listesi: insan cogunlukla daha once yazdigi seyi tekrar yazar.
+let oneri = "";
+function enIyiOneri(v){
+  if(!v) return "";
+  for(let i = gecmis.length - 1; i >= 0; i--)
+    if(gecmis[i].startsWith(v) && gecmis[i] !== v) return gecmis[i];
+  for(const c of KOMUTLAR)
+    if(c.startsWith(v) && c !== v) return c;
+  return "";
+}
+function hayaletCiz(){
+  const v = girdi.value;
+  oneri = enIyiOneri(v);
+  const h = $("#hayalet");
+  h.textContent = "";
+  if(!oneri) return;
+  const b = document.createElement("b");
+  b.textContent = v;                       // seffaf: yalnizca hizalama icin
+  h.append(b, document.createTextNode(oneri.slice(v.length)));
+}
+function oneriKabul(){
+  if(!oneri) return false;
+  girdi.value = oneri;
+  girdi.setSelectionRange(girdi.value.length, girdi.value.length);
+  hayaletCiz();
+  return true;
+}
+girdi.addEventListener("input", hayaletCiz);
+// keydown icinde degeri programla degistiren cok yol var (gecmis, Ctrl+U/K/W,
+// Esc, Tab dongusu). Hepsini tek tek cagirmak yerine tustan SONRA bir kez
+// yeniliyoruz — "input" olayi programatik degisiklikte tetiklenmiyor.
+girdi.addEventListener("keyup", hayaletCiz);
+
+// ---- Tab tamamlama ----
+// Ilk Tab: ortak on eki tamamlar. Tekrar Tab: adaylar arasinda dolasir.
+let tamamAdaylar = null, tamamIdx = 0, tamamKok = "";
+function ortakOnEk(liste){
+  if(!liste.length) return "";
+  let o = liste[0];
+  for(const s of liste) while(!s.startsWith(o)) o = o.slice(0, -1);
+  return o;
+}
+function tamamla(geri){
+  const v = girdi.value;
+  if(!tamamAdaylar){
+    tamamKok = v;
+    tamamAdaylar = KOMUTLAR.filter(c => c.startsWith(v.trimStart()));
+    tamamIdx = -1;
+    if(!tamamAdaylar.length){ tamamAdaylar = null; return; }
+    const ortak = ortakOnEk(tamamAdaylar);
+    if(tamamAdaylar.length === 1){
+      girdi.value = tamamAdaylar[0];
+      $("#tamamHint").textContent = "";
+      tamamAdaylar = null;
+      return;
+    }
+    if(ortak.length > v.trimStart().length){ girdi.value = ortak; tamamKok = ortak; }
+    $("#tamamHint").textContent = tamamAdaylar.join("  ");
+    return;
+  }
+  tamamIdx = (tamamIdx + (geri ? -1 : 1) + tamamAdaylar.length) % tamamAdaylar.length;
+  girdi.value = tamamAdaylar[tamamIdx];
+  $("#tamamHint").textContent =
+    `${tamamIdx + 1}/${tamamAdaylar.length}  ${tamamAdaylar.join("  ")}`;
+}
+
+girdi.addEventListener("keydown", e => {
+  // Tab disindaki her tusta aday listesi gecersizlesir
+  if(e.key !== "Tab" && e.key !== "Shift"){ tamamAdaylar = null; $("#tamamHint").textContent = ""; }
+
+  if(e.key === "Enter"){ hamGonder(); return; }
+
+  // Tab: once hayalet oneriyi kabul et. Oneri yoksa (yazilan zaten tam bir
+  // komutsa) adaylar arasinda dolasmaya gec.
+  if(e.key === "Tab"){
+    e.preventDefault();
+    if(!oneriKabul()) tamamla(e.shiftKey);
+    return;
+  }
+  // Satir sonundayken sag ok da kabul eder — fish refleksi. Imlec ortadaysa
+  // normal imlec hareketi kalsin.
+  if(e.key === "ArrowRight" && oneri &&
+     girdi.selectionStart === girdi.value.length &&
+     girdi.selectionStart === girdi.selectionEnd){
+    e.preventDefault(); oneriKabul(); return;
+  }
+
+  if(e.key === "ArrowUp"){
+    e.preventDefault();
+    if(!gecmis.length) return;
+    if(gIdx === gecmis.length) taslak = girdi.value;   // yazilmakta olani sakla
+    gIdx = Math.max(0, gIdx - 1);
+    girdi.value = gecmis[gIdx];
+    girdi.setSelectionRange(girdi.value.length, girdi.value.length);
+    return;
+  }
+  if(e.key === "ArrowDown"){
+    e.preventDefault();
+    if(gIdx >= gecmis.length) return;
+    gIdx++;
+    girdi.value = gIdx === gecmis.length ? taslak : gecmis[gIdx];
+    girdi.setSelectionRange(girdi.value.length, girdi.value.length);
+    return;
+  }
+
+  // ---- terminal kisayollari ----
+  if(e.ctrlKey && !e.altKey){
+    const t = e.key.toLowerCase();
+    if(t === "l"){ e.preventDefault(); logTemizle(); return; }
+    if(t === "u"){ e.preventDefault(); girdi.value = ""; return; }
+    if(t === "c"){                       // secim varsa kopyalamayi engelleme
+      if(!window.getSelection().toString()){
+        e.preventDefault();
+        if(girdi.value) yerelSatir("› " + girdi.value + " ^C", "gyerel");
+        girdi.value = ""; gIdx = gecmis.length;
+      }
+      return;
+    }
+    if(t === "a"){ e.preventDefault(); girdi.setSelectionRange(0,0); return; }
+    if(t === "e"){ e.preventDefault();
+                   girdi.setSelectionRange(girdi.value.length, girdi.value.length); return; }
+    if(t === "k"){ e.preventDefault();
+                   girdi.value = girdi.value.slice(0, girdi.selectionStart); return; }
+    if(t === "w"){ e.preventDefault();   // son kelimeyi sil
+                   girdi.value = girdi.value.replace(/\s*\S+\s*$/, ""); return; }
+  }
+  // Esc: once satiri temizler, satir zaten bossa odagi BIRAKIR. Odak birakmak
+  // onemli — ok tuslari ancak input disindayken jog pad'i suruyor (bkz. TUS).
+  if(e.key === "Escape"){
+    if(girdi.value){ girdi.value = ""; gIdx = gecmis.length; }
+    else girdi.blur();
+  }
+});
+
+// Terminale hizli odak. Bilerek "herhangi bir harfe basinca odaklan" YAPMADIK:
+// o zaman ok tuslari jog pad'inden calinirdi ve manuel nisan sessizce olurdu.
+addEventListener("keydown", e => {
+  if(e.key !== "/" || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
+  e.preventDefault();
+  girdi.focus();
+});
+
+// ---- gösterim ----
+const rozet = (el, metin, sinif) => {
+  el.textContent = metin;
+  el.className = "rozet " + sinif;
+};
+const say = (v, b=2) => (v === null || v === undefined) ? "—" : Number(v).toFixed(b);
+
+function ciz(d){
+  const t = d.telemetri || {};
+  const bagli = d.bagli && t.pan !== undefined;
+
+  rozet($("#rBag"), bagli ? "BAĞLI" : "BAĞLANTI YOK", bagli ? "ok" : "kotu");
+  rozet($("#rYas"), bagli ? `telemetri ${say(d.yas,1)} sn` : "—", d.yas > 1.5 ? "uyari" : "bos");
+
+  if(!bagli){ return; }
+
+  rozet($("#rEstop"), t.estop ? "ACİL STOP AKTİF" : "acil stop normal", t.estop ? "kotu" : "ok");
+  rozet($("#rHazir"), t.hazir ? "HAZIR" : "DURDURULDU", t.hazir ? "ok" : "kotu");
+  rozet($("#rAtis"),  t.atis  ? "atış serbest" : "ATIŞ KİLİTLİ", t.atis ? "ok" : "uyari");
+  rozet($("#rGuc"),   t.guc   ? "güç var" : "GÜÇ KESİK", t.guc ? "ok" : "kotu");
+  rozet($("#rHar"),   t.mesgul ? "HAREKETTE" : "durgun", t.mesgul ? "uyari" : "bos");
+  // panena=1 -> surucu kapali: motor serbest, isinmiyor, ama konum sayaci korunmuyor
+  rozet($("#rPanSur"), t.panena ? "pan sürücü KAPALI" : "pan sürücü açık",
+                       t.panena ? "uyari" : "bos");
+
+  $("#pan").textContent    = say(t.pan_norm, 2);
+  $("#panHam").textContent = say(t.pan, 3) + " °";
+  $("#tilt").textContent   = say(t.tilt, 2);
+  $("#mesgul").textContent = t.mesgul ? "hareket ediyor" : "durgun";
+
+  // AS5600 ham 0..4095 = motor milinin bir turu
+  const encAci = h => (h === undefined || h === null) ? "—" : (h * 360 / 4096).toFixed(1) + " °";
+  $("#encp").textContent    = t.encp ?? "—";
+  $("#enct").textContent    = t.enct ?? "—";
+  $("#encpDeg").textContent = encAci(t.encp);
+  $("#enctDeg").textContent = encAci(t.enct);
+  $("#encNot").textContent  = (!t.encp && !t.enct)
+      ? "Her ikisi 0: mıknatıs motor miline takılı değil (MD=0) — değerler anlamsız."
+      : "Mıknatıs motor milinde: pan'da 36°, tilt'te 72° içinde mutlak.";
+
+  if(t.lidar_cm !== null && t.lidar_cm !== undefined){
+    $("#lidar").textContent    = t.lidar_cm;
+    $("#lidarSig").textContent = t.lidar_sinyal ?? "—";
+    $("#lidarCubuk").style.width = Math.min(100, t.lidar_cm / 15) + "%";
+  } else {
+    $("#lidar").textContent = "—"; $("#lidarSig").textContent = "veri yok";
+    $("#lidarCubuk").style.width = "0";
+  }
+
+  if(t.ax !== undefined){
+    $("#ivme").textContent = `${say(t.ax)} / ${say(t.ay)} / ${say(t.az)} g`;
+    const boy = Math.hypot(t.ax, t.ay, t.az);
+    $("#ivmeBoy").textContent = say(boy) + " g";
+    $("#jiro").textContent = `${say(t.gx,1)} / ${say(t.gy,1)} / ${say(t.gz,1)} °/s`;
+    const yatis = Math.atan2(t.ay, t.az) * 180 / Math.PI;
+    const yunus = Math.atan2(-t.ax, Math.hypot(t.ay, t.az)) * 180 / Math.PI;
+    $("#egim").textContent = `${say(yatis,1)}° / ${say(yunus,1)}°`;
+    $("#isi").textContent  = say(t.isi, 1) + " °C";
+  } else {
+    $("#ivme").textContent = "IMU okunamıyor";
+  }
+
+  const a = Math.abs(t.akim ?? 0);
+  akimTepe = Math.max(akimTepe, a);
+  $("#akim").textContent     = say(t.akim, 3);
+  $("#akimTepe").textContent = say(akimTepe, 3) + " A";
+  $("#bus").textContent      = say(t.bus, 3) + " V";
+  $("#akimCubuk").style.width = Math.min(100, a / 3 * 100) + "%";
+  akimGec.push(t.akim ?? 0);
+  if(akimGec.length > AKIM_N) akimGec.shift();
+  akimCiz();
+}
+
+// ---- terminal defteri ----
+let zamanGoster = localStorage.getItem("hss_zaman") === "1";
+let kaydirmaDuraklat = false;              // sag tik menusunden kilitlenir
+
+function satirSinifi(s){
+  if(s.startsWith("RED:") || s.includes("REDDEDILDI") || s.includes("UYARI")) return "gred";
+  if(/^(ATIS|kaydedildi|OK\b)/i.test(s) || s.includes("kaydedildi")) return "gok";
+  return "";
+}
+function damga(){
+  const t = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return `${p(t.getHours())}:${p(t.getMinutes())}:${p(t.getSeconds())}`;
+}
+// Tek satir basar. sinif verilmezse metinden cikarilir.
+function logSatir(s, sinif){
+  const d = document.createElement("div");
+  d.className = sinif ?? satirSinifi(s);
+  const z = document.createElement("span");
+  z.className = "zaman";
+  z.textContent = damga() + " ";   // kopyalanan metinde de ayrik dursun
+  z.hidden = !zamanGoster;
+  d.append(z, document.createTextNode(s));
+  kutuLog.appendChild(d);
+  return d;
+}
+function yerelSatir(s, sinif){ gunlukEkle([s], sinif); }
+
+function gunlukEkle(satirlar, sinif){
+  const dipte = kutuLog.scrollHeight - kutuLog.scrollTop - kutuLog.clientHeight < 30;
+  for(const s of satirlar) logSatir(s, sinif);
+  while(kutuLog.children.length > 1000) kutuLog.removeChild(kutuLog.firstChild);
+  // Kullanıcı yukarı kaydırdıysa veya kaydırmayı kilitlediyse zıplatma.
+  if(dipte && !kaydirmaDuraklat) kutuLog.scrollTop = kutuLog.scrollHeight;
+}
+function logTemizle(){ kutuLog.textContent = ""; }
+function logMetin(){
+  return [...kutuLog.children].map(d => d.textContent).join("\n");
+}
+function zamanCevir(){
+  zamanGoster = !zamanGoster;
+  localStorage.setItem("hss_zaman", zamanGoster ? "1" : "0");
+  for(const z of kutuLog.querySelectorAll(".zaman")) z.hidden = !zamanGoster;
+}
+async function panoyaYaz(metin){
+  try{ await navigator.clipboard.writeText(metin); yerelSatir("(panoya kopyalandı)", "gyerel"); }
+  catch(e){ yerelSatir("(pano reddedildi — HTTPS değil; Ctrl+C ile seçip kopyala)", "gyerel"); }
+}
+
+// ---- sağ tık bağlam menüsü ----
+// Satirlar: [etiket, kisayol, islev]. Ayrac icin null.
+const MENU = [
+  ["Seçimi kopyala", "⌘C", () => panoyaYaz(window.getSelection().toString())],
+  ["Tümünü kopyala", "", () => panoyaYaz(logMetin())],
+  ["Dosyaya kaydet", "", () => {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([logMetin()], {type:"text/plain"}));
+      a.download = `hss_gunluk_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.txt`;
+      a.click(); URL.revokeObjectURL(a.href);
+  }],
+  null,
+  ["Zaman damgası", "", zamanCevir],
+  ["Kaydırmayı kilitle", "", () => {
+      kaydirmaDuraklat = !kaydirmaDuraklat;
+      $("#gDurum").classList.toggle("acik", kaydirmaDuraklat);
+      if(!kaydirmaDuraklat) kutuLog.scrollTop = kutuLog.scrollHeight;
+  }],
+  ["Ekranı temizle", "^L", logTemizle],
+  null,
+  ["durum sorgula", "d", () => hizliKomut("d")],
+  ["acil stop durumu", "", () => hizliKomut("estop")],
+  ["ayarları kaydet", "", () => hizliKomut("kaydet")],
+  ["geçmişi sil", "", () => {
+      gecmis = []; gIdx = 0; localStorage.removeItem("hss_gecmis");
+      yerelSatir("(komut geçmişi silindi)", "gyerel");
+  }]
+];
+function hizliKomut(k){ girdi.value = k; hamGonder(); }
+
+const menu = $("#menu");
+for(const s of MENU){
+  if(!s){ menu.appendChild(document.createElement("hr")); continue; }
+  const b = document.createElement("button");
+  b.innerHTML = `<span></span><kbd></kbd>`;
+  b.firstChild.textContent = s[0];
+  b.lastChild.textContent = s[1];
+  b.onclick = () => { menu.classList.remove("acik"); s[2](); };
+  menu.appendChild(b);
+}
+function menuAc(e){
+  e.preventDefault();
+  menu.classList.add("acik");
+  // Ekrandan tasmasin: once ac, sonra olcup geri cek.
+  const g = menu.getBoundingClientRect();
+  menu.style.left = Math.min(e.clientX, innerWidth  - g.width  - 8) + "px";
+  menu.style.top  = Math.min(e.clientY, innerHeight - g.height - 8) + "px";
+}
+kutuLog.addEventListener("contextmenu", menuAc);
+$("#istemSatir").addEventListener("contextmenu", menuAc);
+addEventListener("click", () => menu.classList.remove("acik"));
+addEventListener("keydown", e => { if(e.key === "Escape") menu.classList.remove("acik"); });
+
+// Bir satira cift tiklayinca icindeki komutu geri getir (terminal refleksi).
+kutuLog.addEventListener("dblclick", e => {
+  const d = e.target.closest("div");
+  if(!d || !d.classList.contains("gcmd")) return;
+  girdi.value = d.textContent.replace(/^\s*\S*\s*›\s*/, "").replace(/^›\s*/, "").trim();
+  girdi.focus();
+});
+
+// ---- kamera ----
+// Sayfa 8090'dan geliyor, kamera 8080'de. <img> icin CORS gerekmez; /ayar ve
+// /durum cagrilari icin kamera sunucusu Access-Control-Allow-Origin veriyor.
+const KAM_KOK = `http://${location.hostname}:8080`;
+let kamAcik = true;
+
+function kamKur(){
+  const im = $("#kam");
+  if(!kamAcik){ im.removeAttribute("src"); im.style.display = "none";
+                $("#kamYok").textContent = "akış durduruldu"; return; }
+  im.style.display = "";
+  // Onbellege takilmasin diye her kurusta yeni sorgu dizesi
+  im.src = `${KAM_KOK}/stream.mjpg?t=${Date.now()}`;
+}
+$("#kam").addEventListener("load",  () => $("#kamYok").style.display = "none");
+$("#kam").addEventListener("error", () => {
+  $("#kamYok").style.display = ""; $("#kamYok").textContent = "akış yok";
+});
+
+$("#bKamUygula").onclick = async () => {
+  const fps = $("#kamFps").value;
+  if(fps === "dur"){ kamAcik = false; kamKur(); return; }
+  const [g,y] = $("#kamCoz").value.split("x");
+  $("#kamYok").style.display = ""; $("#kamYok").textContent = "yeniden kuruluyor…";
+  try{
+    await fetch(`${KAM_KOK}/ayar?genislik=${g}&yukseklik=${y}&fps=${fps}`);
+  }catch(e){
+    $("#kamYok").textContent = "kamera sunucusuna ulaşılamadı"; return;
+  }
+  kamAcik = true;
+  setTimeout(kamKur, 1200);          // rpicam-vid yeniden kalksın
+};
+
+async function kamDurum(){
+  try{
+    const d = await (await fetch(`${KAM_KOK}/durum`)).json();
+    $("#kamOlcu").textContent =
+      `${d.genislik}×${d.yukseklik} · ${d.fps.toFixed(1)} fps`;
+    const deger = `${d.genislik}x${d.yukseklik}`;
+    if([...$("#kamCoz").options].some(o => o.value === deger)) $("#kamCoz").value = deger;
+  }catch(e){ $("#kamOlcu").textContent = "sunucu yok"; }
+}
+setInterval(kamDurum, 2000);
+kamDurum();
+kamKur();
+
+// ---- panel gizleme (secim localStorage'da kalir) ----
+const GIZLI_ANAHTAR = "hss_gizli_paneller";
+let gizli = new Set(JSON.parse(localStorage.getItem(GIZLI_ANAHTAR) || "[]"));
+
+function panelleriUygula(){
+  for(const sec of document.querySelectorAll("section[data-panel]"))
+    sec.classList.toggle("gizli", gizli.has(sec.dataset.panel));
+  const r = $("#geriGetir");
+  r.style.display = gizli.size ? "" : "none";
+  r.textContent = `gizli panel: ${gizli.size} · geri getir`;
+  localStorage.setItem(GIZLI_ANAHTAR, JSON.stringify([...gizli]));
+}
+for(const sec of document.querySelectorAll("section[data-panel]")){
+  const d = document.createElement("span");
+  d.className = "kapat"; d.textContent = "×"; d.title = "paneli gizle";
+  d.onclick = () => { gizli.add(sec.dataset.panel); panelleriUygula(); };
+  sec.querySelector("h2").appendChild(d);
+}
+$("#geriGetir").onclick = () => { gizli.clear(); panelleriUygula(); };
+panelleriUygula();
+
+// ---- Hailo tespitleri: kamera goruntusune kutu ciz ----
+const TESPIT_KOK = `http://${location.hostname}:8081`;
+const tuval = $("#tuval"), ctx = tuval.getContext("2d");
+
+function kutulariCiz(d){
+  const im = $("#kam");
+  const eg = im.clientWidth, ey = im.clientHeight;
+  if(!eg || !ey){ return; }
+  if(tuval.width !== eg || tuval.height !== ey){ tuval.width = eg; tuval.height = ey; }
+  ctx.clearRect(0, 0, eg, ey);
+  if(!$("#kutuGoster").checked || !d || !d.tespitler) return;
+  // Kutular tam kare olceginde geliyor (kaynak genislik/yukseklik), ekrandaki
+  // <img> ise CSS ile olceklenmis; ikisi arasindaki carpani her karede bul.
+  const sx = eg / (d.genislik || eg), sy = ey / (d.yukseklik || ey);
+  ctx.lineWidth = 2.5;
+  ctx.font = "600 12px -apple-system,BlinkMacSystemFont,'SF Pro Text',system-ui,sans-serif";
+  ctx.textBaseline = "bottom";
+  for(const t of d.tespitler){
+    const [x1,y1,x2,y2] = t.kutu;
+    const X = x1*sx, Y = y1*sy, G = (x2-x1)*sx, Y2 = (y2-y1)*sy;
+    ctx.strokeStyle = temaRengi("--yesil");
+    ctx.lineJoin = "round";
+    if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(X, Y, G, Y2, 6); ctx.stroke(); }
+    else ctx.strokeRect(X, Y, G, Y2);
+    const etiket = `${t.sinif} ${(t.guven*100).toFixed(0)}%`;
+    const g = ctx.measureText(etiket).width + 8;
+    ctx.fillStyle = "rgba(0,0,0,.62)";
+    if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(X, Y-18, g, 17, 5); ctx.fill(); }
+    else ctx.fillRect(X, Y-18, g, 17);
+    ctx.fillStyle = "#fff"; ctx.fillText(etiket, X+6, Y-5);
+    // merkez capraz — nisan noktasi
+    const mx = (x1+x2)/2*sx, my = (y1+y2)/2*sy;
+    ctx.strokeStyle = temaRengi("--mavi"); ctx.beginPath();
+    ctx.moveTo(mx-6,my); ctx.lineTo(mx+6,my); ctx.moveTo(mx,my-6); ctx.lineTo(mx,my+6);
+    ctx.stroke();
+  }
+}
+
+function tespitListele(d){
+  const k = $("#tespitListe");
+  if(!d){ $("#tespitOzet").textContent = "sunucu yok"; k.innerHTML = ""; return; }
+  $("#tespitOzet").textContent =
+    `${d.tespitler.length} nesne · ${d.fps} fps · ${d.gecikme_ms} ms`;
+  k.innerHTML = "";
+  if(!d.tespitler.length){
+    k.innerHTML = '<div class="bos">tespit yok</div>'; return;
+  }
+  for(const t of d.tespitler.slice(0, 8)){
+    const sat = document.createElement("div");
+    const sap = t.sapma ? ` · sapma ${t.sapma[0].toFixed(2)}/${t.sapma[1].toFixed(2)}` : "";
+    sat.innerHTML = `<span class="sinif">${t.sinif}</span>` +
+                    `<span>${(t.guven*100).toFixed(0)}%${sap}</span>`;
+    k.appendChild(sat);
+  }
+}
+
+$("#bEsik").onclick = async () => {
+  const v = parseFloat($("#tEsik").value);
+  if(isNaN(v) || v < 0 || v > 1){ $("#tespitNot").textContent = "eşik 0 ile 1 arasında olmalı"; return; }
+  try{
+    const c = await (await fetch(`${TESPIT_KOK}/ayar?esik=${v}`)).json();
+    $("#tespitNot").textContent = c.hata
+      ? c.hata
+      : `eşik ${c.esik} uygulandı · model genel COCO, yarışma sınıfları yok`;
+  }catch(e){ $("#tespitNot").textContent = "tespit sunucusuna ulaşılamadı"; }
+};
+
+async function tespitYokla(){
+  try{
+    const d = await (await fetch(`${TESPIT_KOK}/tespit`)).json();
+    kutulariCiz(d); tespitListele(d);
+  }catch(e){ kutulariCiz(null); tespitListele(null); }
+}
+setInterval(tespitYokla, 120);
+addEventListener("resize", () => kutulariCiz(null));
+
+async function yokla(){
+  try{
+    const c = await fetch("/veri?gunluk=" + sonGunluk);
+    const d = await c.json();
+    ciz(d);
+    if(d.gunluk && d.gunluk.length){ gunlukEkle(d.gunluk); }
+    sonGunluk = d.gunluk_no ?? sonGunluk;
+  }catch(e){
+    rozet($("#rBag"), "SUNUCU YOK", "kotu");
+  }
+}
+setInterval(yokla, 150);
+yokla();
+</script>
