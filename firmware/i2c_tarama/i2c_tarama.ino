@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-dwifk0-All-Rights-Reserved
 // Copyright (C) 2026 Ahmet Efe Nezli
 // ESP32-S3 I2C tarama - INA226 (0x40) + MPU9250 (0x68) ara
 #include <Wire.h>

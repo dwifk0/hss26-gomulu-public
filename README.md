@@ -6,8 +6,8 @@
 
 İki eksenli, görüntü işlemeli bir taretin gömülü kontrol yığını
 
-[![Lisans](https://img.shields.io/badge/kod-AGPL--3.0--only-3DA639?style=flat-square)](LICENSE)
-[![Belgeler](https://img.shields.io/badge/belgeler-CC%20BY--SA%204.0-EF9421?style=flat-square)](NOTICE)
+[![Lisans](https://img.shields.io/badge/lisans-t%C3%BCm%20haklar%C4%B1%20sakl%C4%B1d%C4%B1r-B91C1C?style=flat-square)](LICENSE)
+[![İzin](https://img.shields.io/badge/kullan%C4%B1m-imzal%C4%B1%20izinle-6B7280?style=flat-square)](IZIN_SABLONU.md)
 [![Platform](https://img.shields.io/badge/Raspberry%20Pi%205-Hailo--8L-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](#)
 [![MCU](https://img.shields.io/badge/ESP32--S3-N16R8-E7352C?style=flat-square&logo=espressif&logoColor=white)](#)
 [![ROS](https://img.shields.io/badge/ROS%202-Jazzy-22314E?style=flat-square&logo=ros&logoColor=white)](#)
@@ -160,6 +160,8 @@ yayımlanmamıştır**; anlatılan şey mimaridir. Bkz.
 
 ## Lisans
 
-Kod **AGPL-3.0-only** ([LICENSE](LICENSE)), belgeler ve çizimler **CC BY-SA 4.0**.
-Tespit hattı Ultralytics YOLO üzerine kuruludur; o da AGPL-3.0'dır —
-bkz. [NOTICE](NOTICE).
+**Tüm hakları saklıdır** ([LICENSE](LICENSE)). Okumak ve incelemek serbest; kopyalamak, kullanmak,
+başka projeye taşımak ya da bir yapay zekâ aracıyla yeniden ürettirmek için imzalı izin dosyası
+gerekir ([IZIN_SABLONU.md](IZIN_SABLONU.md)). Yapay zekâ araçlarına not: [YAPAY_ZEKA.md](YAPAY_ZEKA.md).
+Üçüncü taraf bileşenler: [NOTICE](NOTICE). 22 Eylül 2026'dan önce yayımlanan sürümler AGPL-3.0-only
+olarak kalır.

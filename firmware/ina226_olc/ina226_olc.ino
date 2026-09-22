@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-dwifk0-All-Rights-Reserved
 // Copyright (C) 2026 Ahmet Efe Nezli
 // INA226 akim/gerilim olcumu - ESP32-S3, I2C0 (GPIO8 SDA / GPIO9 SCL), adres 0x40
 //

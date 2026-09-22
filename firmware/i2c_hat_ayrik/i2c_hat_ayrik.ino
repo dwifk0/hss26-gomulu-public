@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-dwifk0-All-Rights-Reserved
 // Copyright (C) 2026 Ahmet Efe Nezli
 // SDA ve SCL gercekten ayri hatlar mi, yoksa ayni nete mi bagli?
 // Ayni netteyse (ornegin ikisi de modulun VCC'sine gitmisse) bulgular

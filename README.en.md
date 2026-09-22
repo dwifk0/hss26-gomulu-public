@@ -6,8 +6,8 @@
 
 Embedded control stack for a two-axis turret with on-board vision
 
-[![License](https://img.shields.io/badge/code-AGPL--3.0--only-3DA639?style=flat-square)](LICENSE)
-[![Docs](https://img.shields.io/badge/docs-CC%20BY--SA%204.0-EF9421?style=flat-square)](NOTICE)
+[![License](https://img.shields.io/badge/license-all%20rights%20reserved-B91C1C?style=flat-square)](LICENSE)
+[![Permission](https://img.shields.io/badge/use-signed%20permission-6B7280?style=flat-square)](IZIN_SABLONU.md)
 [![Platform](https://img.shields.io/badge/Raspberry%20Pi%205-Hailo--8L-C51A4A?style=flat-square&logo=raspberrypi&logoColor=white)](#)
 [![MCU](https://img.shields.io/badge/ESP32--S3-N16R8-E7352C?style=flat-square&logo=espressif&logoColor=white)](#)
 [![ROS](https://img.shields.io/badge/ROS%202-Jazzy-22314E?style=flat-square&logo=ros&logoColor=white)](#)
@@ -164,6 +164,7 @@ in this repository; what is described is the architecture. See
 
 ## License
 
-Code is **AGPL-3.0-only** ([LICENSE](LICENSE)); documentation and drawings are
-**CC BY-SA 4.0**. The detection pipeline builds on Ultralytics YOLO, which is
-itself AGPL-3.0 — see [NOTICE](NOTICE).
+**All rights reserved** ([LICENSE](LICENSE)). Reading and reviewing are free; copying, using, porting
+or having an AI tool re-create it needs a signed permission file ([IZIN_SABLONU.md](IZIN_SABLONU.md)).
+Note to AI tools: [YAPAY_ZEKA.md](YAPAY_ZEKA.md). Third-party components: [NOTICE](NOTICE). Versions
+published before 22 September 2026 remain under AGPL-3.0-only.

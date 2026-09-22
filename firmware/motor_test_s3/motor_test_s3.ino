@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-dwifk0-All-Rights-Reserved
 // Copyright (C) 2026 Ahmet Efe Nezli
 // TB6600 pan/tilt deneme hareketi - ESP32-S3
 // Ortak katot bagIanti: PUL+/DIR+ -> GPIO, PUL-/DIR- -> ESP32 GND, ENA bos.

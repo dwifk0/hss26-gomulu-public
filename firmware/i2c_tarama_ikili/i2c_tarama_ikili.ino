@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-dwifk0-All-Rights-Reserved
 // Copyright (C) 2026 Ahmet Efe Nezli
 // Cift I2C hatti tarama + AS5600 / IMU teshisi - ESP32-S3
 // I2C0 (Wire ) = GPIO8 SDA / GPIO9 SCL  -> AS5600 pan (0x36), INA226 (0x40), IMU (0x68)
