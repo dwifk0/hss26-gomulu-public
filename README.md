@@ -29,19 +29,22 @@ TEKNOFEST Çelikkubbe Hava Savunma Sistemleri yarışması için **MİĞFER** ta
 Sistem iki işlemci arasında bölünmüştür: **Raspberry Pi 5** görür ve karar verir,
 **ESP32-S3** hareket ettirir ve emniyeti tutar. Aradaki sınır bilinçlidir —
 gecikmeye duyarlı ve emniyetle ilgili her şey mikrodenetleyicide, ağ/görüntü/
-arayüz tarafındaki her şey Linux'tadır. Pi düşerse taret kilitlenir, ESP32
-düşerse motorlar donanımdan beslemesiz kalır.
+arayüz tarafındaki her şey Linux'tadır. Asıl emniyet yetkisi **donanım acil stop
+butonunda**: buton motor beslemesini kendi kontağıyla keser. ESP32'nin ARM rölesi
+yalnız *ek* bir durdurma yoludur — ESP resetlenirse röle bırakık kalır ve sistem
+beslemede kalır (adım darbesi gelmediği için eksenler tutar ama durur). Pi düşerse
+taret son hedefine gidip durur; firmware'de bağlantı gözcüsü bu sürümde yoktu.
 
 Ayrıntılı anlatım: **[`docs/MIMARI.md`](docs/MIMARI.md)**
 
-## Ölçülen başarım
+## Başarım (ölçülen ve hesaplanan)
 
 | | Sonuç |
 |---|---|
 | 🧠 **Tespit (Hailo-8L NPU)** | **30,0 fps · 24,5 ms · sıfır kare kaybı** |
 | 🐢 Aynı model, Pi işlemcisinde | 1,2 fps · 700 ms — **25× fark** |
-| ⚙️ Adım üreteci | 50 kHz ISR · **20 µs jitter** · döngüden bağımsız |
-| 🎯 Eksen hızı (1/16 mikroadım) | pan ~281 °/s · tilt ~562 °/s |
+| ⚙️ Adım üreteci | 50 kHz ISR · 20 µs tik (jitter tek tikle sınırlı — *hesaplanan*) · döngüden bağımsız |
+| 🎯 Eksen hızı tavanı (1/16 mikroadım) | pan ~281 °/s · tilt ~562 °/s — *hesaplanan* (25 000 adım/s sınırından) |
 | 📐 Dişli | pan **10:1** · tilt **5:1** — tam tur 32 000 / 16 000 adım |
 | 🔄 Açılış | Üç systemd birimi, operatör müdahalesi gerekmeden |
 
@@ -78,9 +81,12 @@ kesmede üretilir — ivme profili döngü yüküne bağlı değildir.
 
 ### 🔌 Boot'ta güvenli sürücü kapıları
 
-Her iki TB6600 `ENA` hattında **10 kΩ pull-down** vardır. Reset anında, firmware
-pinleri yapılandırana kadar ayak havada kalır; pull-down onu LOW'a çeker ve
-sürücüler **açık** başlar, yani eksenler tutmaya devam eder.
+Tasarımda iki TB6600 `ENA` hattında da **10 kΩ pull-down** vardır: reset anında,
+firmware pinleri yapılandırana kadar ayak havada kalır; pull-down onu LOW'a çeker ve
+sürücüler **açık** başlar, yani eksenler tutmaya devam eder. ⚠ Uygulamada belgeler
+çelişkili: ilk donanım kaydı "ENA boş, bağlı değil" diyor
+([`DONANIM_KAYDI.md`](docs/DONANIM_KAYDI.md)), tilt hattına 15 Ağustos'ta eklendi;
+pan hattının son hâli ölçülerek doğrulanmadı.
 
 ### ⚖️ Tilt bilerek kapanmıyor
 
@@ -149,6 +155,22 @@ Kart görünmezse **BOOT basılı tut → RST'ye bas → BOOT bırak**.
 
 ---
 
+## Sonuç, rolüm ve test edilmeyenler
+
+- **Sonuç:** 2026 sezonu video testine yetişmedi ve takım elendi. Sebep atış
+  donanımıydı: 6 kademeli elektromanyetik namlu (coilgun) tamamlanamadı. Sistem
+  **hiç atış yapmadı**; pan/tilt, emniyet zinciri, tespit hattı ve arayüz tezgahta
+  çalıştı.
+- **Rolüm:** ESP32-S3 firmware'i (adım üreteci, emniyet zinciri, telemetri), Pi
+  tarafındaki taret köprüsü ve sunucu, Hailo tespit hattının kurulumu, elektronik
+  bağlantı ve tezgah ölçümleri. Mekanik tasarım, namlu ve ateşleme donanımı
+  takımın diğer üyelerinindir. Yarışma modelinin `.hef` derlemesi ekipte yapıldı.
+- **Bu sürümde bilinen kusurlar** (2027 çalışma deposunda düzeltildi, burada
+  2026 hâli olduğu gibi duruyor): `ates`, `hiztest`, `akimtest` gibi bloklayan
+  döngülerde acil stop butonu yazılımda yeniden okunmuyordu (donanım kesmesi
+  çalışır); firmware'de bağlantı gözcüsü ve watchdog yok; harekete yasak alan
+  için komut yok (yalnız atışa yasak sektör var).
+
 ## ⚠ Emniyet
 
 Bu sistem step motor, motor beslemesi üzerinde mandallı röle ve yüksek gerilimli
@@ -160,7 +182,8 @@ yayımlanmamıştır**; anlatılan şey mimaridir. Bkz.
 
 ## Lisans
 
-**Tüm hakları saklıdır** ([LICENSE](LICENSE)). Okumak ve incelemek serbest; kopyalamak, kullanmak,
+**Tüm hakları saklıdır** ([LICENSE](LICENSE)). Okumak, incelemek ve **değerlendirme için indirip derlemek, testleri
+çalıştırmak** serbest (LICENSE §1d); bunun dışında kopyalamak, kullanmak,
 başka projeye taşımak ya da bir yapay zekâ aracıyla yeniden ürettirmek için imzalı izin dosyası
 gerekir ([IZIN_SABLONU.md](IZIN_SABLONU.md)). Yapay zekâ araçlarına not: [YAPAY_ZEKA.md](YAPAY_ZEKA.md).
 Üçüncü taraf bileşenler: [NOTICE](NOTICE). 22 Eylül 2026'dan önce yayımlanan sürümler AGPL-3.0-only

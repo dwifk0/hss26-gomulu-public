@@ -31,18 +31,21 @@ defence systems competition — 2026 season.
 The system is split across two processors: the **Raspberry Pi 5** sees and
 decides, the **ESP32-S3** moves and holds safety. The boundary is deliberate —
 everything latency-sensitive or safety-related lives on the microcontroller,
-everything to do with networking, imaging and user interface lives on Linux. If
-the Pi dies the turret locks; if the ESP32 dies the motors lose power in
-hardware.
+everything to do with networking, imaging and user interface lives on Linux. The
+real safety authority is the **hardware e-stop button**, which cuts the motor
+supply with its own contact. The ESP32's ARM relay is only an *additional* stop
+path — if the ESP resets, the relay stays released and the supply stays on (no
+step pulses arrive, so the axes hold but stop). If the Pi dies, the turret goes
+to its last target and stops; this version had no link watchdog in firmware.
 
-## Measured performance
+## Performance (measured and calculated)
 
 | | Result |
 |---|---|
 | 🧠 **Detection (Hailo-8L NPU)** | **30.0 fps · 24.5 ms · zero dropped frames** |
 | 🐢 Same model on the Pi's CPU | 1.2 fps · 700 ms — a **25× difference** |
-| ⚙️ Step generator | 50 kHz ISR · **20 µs jitter** · independent of loop timing |
-| 🎯 Axis rate (1/16 microstep) | pan ~281 °/s · tilt ~562 °/s |
+| ⚙️ Step generator | 50 kHz ISR · 20 µs tick (jitter bounded to one tick — *calculated*) · independent of loop timing |
+| 🎯 Axis rate ceiling (1/16 microstep) | pan ~281 °/s · tilt ~562 °/s — *calculated* (from the 25,000 steps/s limit) |
 | 📐 Gearing | pan **10:1** · tilt **5:1** — 32,000 / 16,000 steps per revolution |
 | 🔄 Startup | Three systemd units, no operator input required |
 
@@ -80,9 +83,12 @@ ISR, so the acceleration profile never depends on loop load.
 
 ### 🔌 Boot-safe driver enables
 
-Both TB6600 `ENA` lines carry **10 kΩ pull-downs**. During reset, before the
-firmware configures the pins, they float — the pull-down holds them low, which
-means the drivers come up *enabled* and the axes keep holding position.
+By design both TB6600 `ENA` lines carry **10 kΩ pull-downs**: during reset, before
+the firmware configures the pins, they float — the pull-down holds them low, so
+the drivers come up *enabled* and the axes keep holding. ⚠ The records disagree on
+what was built: the first hardware log says "ENA left open"
+([`DONANIM_KAYDI.md`](docs/DONANIM_KAYDI.md)); the tilt line got its pull-down on
+15 August; the final state of the pan line was not verified by measurement.
 
 ### ⚖️ Tilt holds, by design
 
@@ -153,6 +159,23 @@ If the board does not enumerate, hold **BOOT**, tap **RST**, release **BOOT**.
 
 ---
 
+## Outcome, my role and what was not tested
+
+- **Outcome:** the 2026 season missed the video test and the team was eliminated.
+  The cause was the firing hardware: the 6-stage electromagnetic barrel (coilgun)
+  was not finished. The system **never fired**; pan/tilt, the safety chain, the
+  detection pipeline and the UI worked on the bench.
+- **My role:** the ESP32-S3 firmware (step generator, safety chain, telemetry),
+  the turret bridge and server on the Pi, setting up the Hailo detection
+  pipeline, wiring and bench measurements. Mechanical design, the barrel and the
+  firing hardware belong to other team members. The competition model's `.hef`
+  was compiled by the team.
+- **Known defects in this version** (fixed in the 2027 working repository, kept
+  here as the 2026 state): in blocking loops such as `ates`, `hiztest`,
+  `akimtest` the e-stop button was not re-read in software (the hardware cut
+  still works); no link watchdog or watchdog timer in firmware; no command for a
+  no-move zone (only a no-fire sector).
+
 ## ⚠ Safety
 
 This system drives stepper motors, a latching relay on a motor supply, and a
@@ -164,7 +187,8 @@ in this repository; what is described is the architecture. See
 
 ## License
 
-**All rights reserved** ([LICENSE](LICENSE)). Reading and reviewing are free; copying, using, porting
+**All rights reserved** ([LICENSE](LICENSE)). Reading, reviewing and **cloning, building and running the
+tests for evaluation** are free (LICENSE §1d); beyond that, copying, using, porting
 or having an AI tool re-create it needs a signed permission file ([IZIN_SABLONU.md](IZIN_SABLONU.md)).
 Note to AI tools: [YAPAY_ZEKA.md](YAPAY_ZEKA.md). Third-party components: [NOTICE](NOTICE). Versions
 published before 22 September 2026 remain under AGPL-3.0-only.

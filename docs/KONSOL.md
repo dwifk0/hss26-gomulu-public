@@ -36,10 +36,11 @@ Bu kapı operatörün kazara geliştirici bölümlerine girmesini engeller; bir
 güvenlik sınırı değildir. Tarayıcı tarafında tutulan hiçbir parola gizli
 değildir — kaynağı açan görür.
 
-**Bu depoda parola sabiti boş bırakılmıştır.** Gerçek doğrulama sunucu
-tarafında yapılmalıdır: parola `taret_sunucu.py` içinde ortam değişkeninden
-okunur, oturum çerezle taşınır, konsol yalnızca sunucudan gelen yetki
-cevabına bakar.
+**Bu depoda parola sabiti boş bırakılmıştır ve boş sabitle geliştirici modu
+kapalıdır.** ⚠ Bu sürümün sunucusunda (`taret_sunucu.py`) **kimlik doğrulama
+yok**: HTTP ve TCP kimliksiz açılır, aynı ağdaki herkes komut gönderebilir. Gerçek
+doğrulama sunucu tarafında yapılmalıdır (2027 çalışma deposunda izinli ağ listesi,
+ağdan emniyet atlatma yasağı ve parola eklendi).
 
 ---
 

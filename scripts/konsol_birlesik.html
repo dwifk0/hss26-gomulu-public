@@ -4022,7 +4022,9 @@ document.getElementById("giris").addEventListener("submit", e => {
   e.preventDefault();
   const k = document.getElementById("gKullanici").value.trim();
   const p = document.getElementById("gParola").value;
-  if (k === HESAP.kullanici && p === HESAP.parola){
+  // Bos sabit "parola yok" demek: gelistirici modu ACILMAZ (eskiden bos
+  // parolayla aciliyordu).
+  if (HESAP.parola !== "" && k === HESAP.kullanici && p === HESAP.parola){
     gelistiriciAyarla(true); girisKapat();
     bildir("Geliştirici modu", "admin oturumu açık", "v");
     gorunumeGec("Katman0");        /* geliştiriciye geçince donanım konsolu */

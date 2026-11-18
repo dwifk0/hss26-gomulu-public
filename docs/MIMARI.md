@@ -3,8 +3,11 @@
 Taret iki işlemci arasında bölünmüştür: **Raspberry Pi 5** görür ve karar verir,
 **ESP32-S3** hareket ettirir ve emniyeti tutar. Aradaki sınır bilinçlidir —
 gecikmeye duyarlı ve emniyetle ilgili her şey mikrodenetleyicide, ağ/görüntü/
-kullanıcı arayüzü tarafındaki her şey Linux'tadır. Pi düşerse taret kilitlenir,
-ESP32 düşerse motorlar donanımdan beslemesiz kalır.
+kullanıcı arayüzü tarafındaki her şey Linux'tadır. Asıl emniyet yetkisi donanım
+acil stop butonundadır (motor beslemesini kendi kontağıyla keser). ESP32'nin ARM
+rölesi ek bir durdurma yoludur: ESP resetlenirse röle bırakık kalır, sistem
+beslemede kalır. Pi düşerse taret son hedefine gidip durur (bu sürümde firmware'de
+bağlantı gözcüsü yok; 2027'de eklendi).
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../varlik/mimari-koyu.svg">
@@ -25,7 +28,8 @@ sonucu var:
 
 - **Adım hızı ana döngüden bağımsız.** WiFi, telemetri ya da I²C okuması döngüyü
   ne kadar yavaşlatırsa yavaşlatsın adım periyodu değişmez.
-- **Çözünürlük tik başına 20 µs.** Jitter tek tikle sınırlı.
+- **Çözünürlük tik başına 20 µs.** Jitter tasarım gereği tek tikle sınırlı
+  (hesaplanan; osiloskopla ölçülmedi).
 - **Rampalar aynı yerde üretilir.** Trapez hızlanma/yavaşlama biriktiricinin
   artış miktarını değiştirerek yapılır; ivme profili yine döngü yükünden
   etkilenmez.
