@@ -167,9 +167,10 @@ If the board does not enumerate, hold **BOOT**, tap **RST**, release **BOOT**.
   detection pipeline and the UI worked on the bench.
 - **My role:** the ESP32-S3 firmware (step generator, safety chain, telemetry),
   the turret bridge and server on the Pi, setting up the Hailo detection
-  pipeline, wiring and bench measurements. Mechanical design, the barrel and the
-  firing hardware belong to other team members. The competition model's `.hef`
-  was compiled by the team.
+  pipeline and compiling the competition model's `.hef` (live on 17 August;
+  later builds were handed to the team), wiring and bench measurements.
+  Mechanical design, the barrel, the firing hardware, model training and the
+  ground-station UI belong to other team members.
 - **Known defects in this version** (fixed in the 2027 working repository, kept
   here as the 2026 state): in blocking loops such as `ates`, `hiztest`,
   `akimtest` the e-stop button was not re-read in software (the hardware cut

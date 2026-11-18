@@ -162,9 +162,10 @@ Kart görünmezse **BOOT basılı tut → RST'ye bas → BOOT bırak**.
   **hiç atış yapmadı**; pan/tilt, emniyet zinciri, tespit hattı ve arayüz tezgahta
   çalıştı.
 - **Rolüm:** ESP32-S3 firmware'i (adım üreteci, emniyet zinciri, telemetri), Pi
-  tarafındaki taret köprüsü ve sunucu, Hailo tespit hattının kurulumu, elektronik
-  bağlantı ve tezgah ölçümleri. Mekanik tasarım, namlu ve ateşleme donanımı
-  takımın diğer üyelerinindir. Yarışma modelinin `.hef` derlemesi ekipte yapıldı.
+  tarafındaki taret köprüsü ve sunucu, Hailo tespit hattının kurulumu ve yarışma
+  modelinin `.hef` derlemesi (17 Ağustos'ta canlıya alındı; sonraki derlemeler
+  ekibe devredildi), elektronik bağlantı ve tezgah ölçümleri. Mekanik tasarım,
+  namlu, ateşleme donanımı, model eğitimi ve YKİ arayüzü takımın diğer üyelerinindir.
 - **Bu sürümde bilinen kusurlar** (2027 çalışma deposunda düzeltildi, burada
   2026 hâli olduğu gibi duruyor): `ates`, `hiztest`, `akimtest` gibi bloklayan
   döngülerde acil stop butonu yazılımda yeniden okunmuyordu (donanım kesmesi
