@@ -177,6 +177,12 @@ If the board does not enumerate, hold **BOOT**, tap **RST**, release **BOOT**.
   still works); no link watchdog or watchdog timer in firmware; no command for a
   no-move zone (only a no-fire sector).
 
+## Use of AI
+
+The documentation, code comments and part of the helper scripts were written
+with AI assistance. Wiring, bench measurements, fault diagnosis and bringing the
+system up on the Pi + ESP32 were done at the hardware.
+
 ## ⚠ Safety
 
 This system drives stepper motors, a latching relay on a motor supply, and a

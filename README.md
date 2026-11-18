@@ -172,6 +172,12 @@ Kart görünmezse **BOOT basılı tut → RST'ye bas → BOOT bırak**.
   çalışır); firmware'de bağlantı gözcüsü ve watchdog yok; harekete yasak alan
   için komut yok (yalnız atışa yasak sektör var).
 
+## Yapay zekâ kullanımı
+
+Belgeler, kod yorumları ve yardımcı betiklerin bir kısmı yapay zekâ destekli
+yazıldı. Donanım bağlantıları, tezgah ölçümleri, arıza teşhisleri ve sistemin
+Pi + ESP32 üzerinde ayağa kaldırılması donanım başında yapıldı.
+
 ## ⚠ Emniyet
 
 Bu sistem step motor, motor beslemesi üzerinde mandallı röle ve yüksek gerilimli
